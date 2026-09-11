@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>音声ファイル</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 14px 16px;
+
+            border: 1px solid #ccc;
+            border-radius: 10px;
+
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search:focus {
+            border-color: #666;
+        }
+
+        .status {
+            margin: 20px 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .song {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+
+            padding: 18px;
+            margin-bottom: 12px;
+        }
+
+        .song-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 12px;
+
+            word-break: break-word;
+        }
+
+        audio {
+            width: 100%;
+        }
+
+        .download {
+            display: inline-block;
+
+            margin-top: 10px;
+            padding: 8px 12px;
+
+            border-radius: 8px;
+
+            background: #eee;
+            color: #222;
+
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .download:hover {
+            background: #ddd;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎵 音声ファイル</h1>
+    <p>GitHub Releasesから自動取得</p>
+</header>
+
+<main>
+
+    <input
+        id="search"
+        class="search"
+        type="search"
+        placeholder="曲名を検索..."
+    >
+
+    <div id="status" class="status">
+        音声ファイルを取得しています...
+    </div>
+
+    <div id="songs"></div>
+
+</main>
+
+<script>
+
+const OWNER = "aoaoaoreinn-a11y";
+const REPO = "yt";
+const RELEASE_TAG = "audio";
+
+const API_URL =
+    `https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/${RELEASE_TAG}`;
+
+let songs = [];
+
+
+/* ==========================================
+   GitHub Releaseから音声一覧を取得
+   ========================================== */
+
+async function loadSongs() {
+
+    const status =
+        document.getElementById("status");
+
+    try {
+
+        const response =
+            await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+        const release =
+            await response.json();
+
+        songs =
+            release.assets
+                .filter(asset =>
+                    asset.name
+                        .toLowerCase()
+                        .endsWith(".opus")
+                )
+                .map(asset => ({
+                    name: asset.name,
+                    title: asset.label || asset.name,
+                    url: asset.browser_download_url,
+                    size: asset.size
+                }));
+
+        renderSongs();
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "音声ファイルを取得できませんでした。";
+
+    }
+}
+
+
+/* ==========================================
+   ファイルサイズ
+   ========================================== */
+
+function formatSize(bytes) {
+
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
+
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+
+/* ==========================================
+   曲一覧表示
+   ========================================== */
+
+function renderSongs() {
+
+    const container =
+        document.getElementById("songs");
+
+    const status =
+        document.getElementById("status");
+
+    const search =
+        document.getElementById("search")
+            .value
+            .toLowerCase();
+
+    container.innerHTML = "";
+
+    const filtered =
+        songs.filter(song =>
+            song.title
+                .toLowerCase()
+                .includes(search)
+        );
+
+    status.textContent =
+        `${filtered.length}曲`;
+
+    if (filtered.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty">
+                該当する音声ファイルがありません。
+            </div>
+        `;
+
+        return;
+    }
+
+    for (const song of filtered) {
+
+        const element =
+            document.createElement("div");
+
+        element.className = "song";
+
+        element.innerHTML = `
+
+            <div class="song-title">
+                ${escapeHtml(song.title)}
+            </div>
+
+            <audio
+                controls
+                preload="none"
+                src="${escapeAttribute(song.url)}"
+            ></audio>
+
+            <a
+                class="download"
+                href="${escapeAttribute(song.url)}"
+                download
+            >
+                ダウンロード
+            </a>
+
+            <div
+                style="
+                    margin-top:8px;
+                    color:#888;
+                    font-size:12px;
+                "
+            >
+                ${formatSize(song.size)}
+            </div>
+
+        `;
+
+        container.appendChild(element);
+    }
+}
+
+
+/* ==========================================
+   HTMLエスケープ
+   ========================================== */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+/* ==========================================
+   属性値用エスケープ
+   ========================================== */
+
+function escapeAttribute(text) {
+
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+
+/* ==========================================
+   検索
+   ========================================== */
+
+document
+    .getElementById("search")
+    .addEventListener(
+        "input",
+        renderSongs
+    );
+
+
+/* ==========================================
+   起動
+   ========================================== */
+
+loadSongs();
+
+</script>
+
+</body>
+</html>
