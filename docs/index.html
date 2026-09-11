@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- favicon.icoへの不要な404を防止 -->
+<link rel="icon" href="data:,">
+
 <title>音声ファイル</title>
 
 <style>
@@ -487,12 +490,24 @@ audio {
 
 <script>
 
+/* =========================================
+   GitHub
+========================================= */
+
 const OWNER = "aoaoaoreinn-a11y";
 const REPO = "yt";
 const RELEASE_TAG = "audio";
 
 const API_URL =
     `https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/${RELEASE_TAG}`;
+
+
+/* =========================================
+   GAS
+========================================= */
+
+const GAS_URL =
+    "https://script.google.com/macros/s/AKfycbyRoupgx5PeSQjOo1XCpCExsvIp4dJ94iN8BriASIOULTUNOMaotXdZ0M1beI5x5TZ_tA/exec";
 
 
 /* =========================================
@@ -548,6 +563,7 @@ function openDatabase() {
         };
 
         request.onerror = () => {
+
             reject(
                 request.error ||
                 new Error("IndexedDBを開けませんでした。")
@@ -587,7 +603,9 @@ function getCachedAudio(name) {
             const result =
                 request.result;
 
-            if (!result || !(result.data instanceof Blob)) {
+            if (!result ||
+                !(result.data instanceof Blob)) {
+
                 resolve(null);
                 return;
             }
@@ -596,6 +614,7 @@ function getCachedAudio(name) {
         };
 
         request.onerror = () => {
+
             reject(
                 request.error ||
                 new Error("IndexedDB読み込みエラー")
@@ -614,7 +633,9 @@ function saveAudio(name, blob) {
     return new Promise((resolve, reject) => {
 
         if (!db) {
-            reject(new Error("IndexedDBが開かれていません。"));
+            reject(
+                new Error("IndexedDBが開かれていません。")
+            );
             return;
         }
 
@@ -639,6 +660,7 @@ function saveAudio(name, blob) {
         };
 
         request.onerror = () => {
+
             reject(
                 request.error ||
                 new Error("IndexedDB保存エラー")
@@ -654,7 +676,6 @@ function saveAudio(name, blob) {
 
 let songs = [];
 let currentIndex = -1;
-
 let currentObjectURL = null;
 
 const audio =
@@ -691,6 +712,7 @@ async function loadSongs() {
             await fetch(API_URL);
 
         if (!response.ok) {
+
             throw new Error(
                 `HTTP ${response.status}`
             );
@@ -701,6 +723,7 @@ async function loadSongs() {
 
         songs =
             Array.isArray(release.assets)
+
                 ? release.assets
                     .filter(asset =>
                         typeof asset.name === "string" &&
@@ -711,9 +734,11 @@ async function loadSongs() {
                     .map(asset => ({
                         name: asset.name,
                         title: asset.label || asset.name,
+                        id: asset.name.replace(/\.opus$/i, ""),
                         url: asset.browser_download_url,
                         size: asset.size
                     }))
+
                 : [];
 
         renderSongs();
@@ -826,7 +851,9 @@ function renderSongs() {
         button.addEventListener(
             "click",
             event => {
+
                 event.stopPropagation();
+
                 playSong(realIndex);
             }
         );
@@ -837,6 +864,161 @@ function renderSongs() {
         );
 
         container.appendChild(element);
+    });
+}
+
+
+/* =========================================
+   Base64 → Blob
+========================================= */
+
+function base64ToBlob(base64, mimeType) {
+
+    const binary =
+        atob(base64);
+
+    const bytes =
+        new Uint8Array(binary.length);
+
+    const chunkSize = 1024 * 1024;
+
+    for (
+        let offset = 0;
+        offset < binary.length;
+        offset += chunkSize
+    ) {
+
+        const end =
+            Math.min(
+                offset + chunkSize,
+                binary.length
+            );
+
+        for (
+            let i = offset;
+            i < end;
+            i++
+        ) {
+
+            bytes[i] =
+                binary.charCodeAt(i);
+        }
+    }
+
+    return new Blob(
+        [bytes],
+        {
+            type: mimeType || "audio/ogg"
+        }
+    );
+}
+
+
+/* =========================================
+   GASから音声を取得
+========================================= */
+
+function getAudioFromGAS(videoId) {
+
+    return new Promise((resolve, reject) => {
+
+        const callbackName =
+            "__gasAudio_" +
+            Date.now() +
+            "_" +
+            Math.random()
+                .toString(36)
+                .slice(2);
+
+        const script =
+            document.createElement("script");
+
+        let finished = false;
+
+        const cleanup = () => {
+
+            if (finished) {
+                return;
+            }
+
+            finished = true;
+
+            delete window[callbackName];
+
+            script.remove();
+        };
+
+        window[callbackName] = data => {
+
+            if (finished) {
+                return;
+            }
+
+            cleanup();
+
+            if (!data ||
+                data.error) {
+
+                reject(
+                    new Error(
+                        data?.error ||
+                        "GASから音声データを取得できませんでした。"
+                    )
+                );
+
+                return;
+            }
+
+            if (!data.data) {
+
+                reject(
+                    new Error(
+                        "GASから音声データが返されませんでした。"
+                    )
+                );
+
+                return;
+            }
+
+            try {
+
+                const blob =
+                    base64ToBlob(
+                        data.data,
+                        data.mimeType || "audio/ogg"
+                    );
+
+                resolve({
+                    blob: blob,
+                    name: data.name,
+                    label: data.label
+                });
+
+            } catch (error) {
+
+                reject(error);
+            }
+        };
+
+        script.onerror = () => {
+
+            cleanup();
+
+            reject(
+                new Error(
+                    "GASへの接続に失敗しました。"
+                )
+            );
+        };
+
+        script.src =
+            GAS_URL +
+            "?id=" +
+            encodeURIComponent(videoId) +
+            "&callback=" +
+            encodeURIComponent(callbackName);
+
+        document.head.appendChild(script);
     });
 }
 
@@ -862,9 +1044,7 @@ async function playSong(index) {
     playButton.textContent =
         "▶";
 
-    /*
-       前のBlob URLを解放
-    */
+    /* 前のBlob URLを解放 */
 
     if (currentObjectURL) {
 
@@ -875,17 +1055,11 @@ async function playSong(index) {
         currentObjectURL = null;
     }
 
-    /*
-       一度停止
-    */
-
     audio.pause();
 
-    /*
-       =====================================
-       ① IndexedDBを確認
-       =====================================
-    */
+    /* =====================================
+       ① IndexedDB確認
+    ===================================== */
 
     let cachedBlob = null;
 
@@ -903,11 +1077,9 @@ async function playSong(index) {
     }
 
 
-    /*
-       =====================================
+    /* =====================================
        ② IndexedDBに存在
-       =====================================
-    */
+    ===================================== */
 
     if (cachedBlob) {
 
@@ -943,11 +1115,9 @@ async function playSong(index) {
     }
 
 
-    /*
-       =====================================
+    /* =====================================
        ③ IndexedDBに存在しない
-       =====================================
-    */
+    ===================================== */
 
     console.log(
         "IndexedDBに存在しません:",
@@ -955,57 +1125,43 @@ async function playSong(index) {
     );
 
 
-    /*
-       =====================================
-       ④ ネットから取得して保存
-       
-       ただしGitHub ReleasesはCORSの
-       制限によりfetchできない場合がある。
-       その場合は通常のaudio再生へ移行。
-       =====================================
-    */
+    /* =====================================
+       ④ GASから取得
+    ===================================== */
 
     try {
 
-        const response =
-            await fetch(
-                song.url,
-                {
-                    mode: "cors"
-                }
-            );
+        console.log(
+            "GASから取得開始:",
+            song.id
+        );
 
-        if (!response.ok) {
+        const result =
+            await getAudioFromGAS(song.id);
 
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
+        console.log(
+            "GASから音声取得完了:",
+            result.name
+        );
 
-        const blob =
-            await response.blob();
 
-        /*
-           Blobとして正常に取得できたら保存
-        */
+        /* =================================
+           ⑤ IndexedDBへ保存
+        ================================= */
 
         try {
 
             await saveAudio(
                 song.name,
-                blob
+                result.blob
             );
 
             console.log(
-                "IndexedDBへ保存:",
+                "IndexedDBへ保存しました:",
                 song.title
             );
 
         } catch (saveError) {
-
-            /*
-               保存失敗でも再生自体は続行
-            */
 
             console.warn(
                 "IndexedDB保存失敗。再生は続行します:",
@@ -1013,13 +1169,14 @@ async function playSong(index) {
             );
         }
 
-        /*
-           取得したBlobを再生
-        */
+
+        /* =================================
+           ⑥ Blobを再生
+        ================================= */
 
         currentObjectURL =
             URL.createObjectURL(
-                blob
+                result.blob
             );
 
         audio.src =
@@ -1029,21 +1186,19 @@ async function playSong(index) {
 
     } catch (error) {
 
-        /*
-           =================================
-           CORSなどでfetchできない場合
-           =================================
-
-           ここではエラーを画面に出さず、
-           GitHubのURLをaudio要素へ直接渡す。
-           
-           これなら現在のGitHub Releases
-           構成でも通常再生できる。
-        */
-
-        console.warn(
-            "IndexedDB用の取得に失敗しました。通常再生へ移行します:",
+        console.error(
+            "GASからの取得に失敗しました:",
             error
+        );
+
+
+        /* =================================
+           ⑦ 最終フォールバック
+           GitHub Releaseを直接再生
+        ================================= */
+
+        console.log(
+            "通常のGitHub Release再生へ移行します。"
         );
 
         audio.src =
@@ -1216,14 +1371,18 @@ audio.addEventListener(
     "timeupdate",
     () => {
 
-        if (!Number.isFinite(audio.duration) ||
-            audio.duration <= 0) {
+        if (
+            !Number.isFinite(audio.duration) ||
+            audio.duration <= 0
+        ) {
             return;
         }
 
         progress.value =
-            (audio.currentTime /
-                audio.duration) * 100;
+            (
+                audio.currentTime /
+                audio.duration
+            ) * 100;
 
         currentTime.textContent =
             formatTime(audio.currentTime);
@@ -1239,8 +1398,10 @@ progress.addEventListener(
     "input",
     () => {
 
-        if (!Number.isFinite(audio.duration) ||
-            audio.duration <= 0) {
+        if (
+            !Number.isFinite(audio.duration) ||
+            audio.duration <= 0
+        ) {
             return;
         }
 
@@ -1365,11 +1526,6 @@ function escapeAttribute(text) {
 
     } catch (error) {
 
-        /*
-           IndexedDBが使えなくても
-           サイト自体は動かす。
-        */
-
         console.warn(
             "IndexedDBを利用できません。通常再生で動作します:",
             error
@@ -1379,7 +1535,6 @@ function escapeAttribute(text) {
     await loadSongs();
 
 })();
-
 </script>
 
 </body>
