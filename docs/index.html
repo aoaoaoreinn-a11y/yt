@@ -1,1068 +1,535 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
 <title>音声ファイル</title>
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    :root {
-        --bg: #000000;
-        --sidebar: #050505;
-        --panel: #121212;
-        --panel-hover: #1c1c1c;
-        --text: #ffffff;
-        --subtext: #b3b3b3;
-        --border: #292929;
-        --accent: #1ed760;
-        --accent-hover: #1fdf64;
-    }
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
 
-    html,
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: #121212;
+    color: #fff;
+
+    padding-bottom: 110px;
+    overflow-x: hidden;
+}
+
+/* =========================
+   ヘッダー
+========================= */
+
+header {
+    padding: 28px 32px 20px;
+    background: #121212;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+header p {
+    margin: 6px 0 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+/* =========================
+   メイン
+========================= */
+
+main {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+    padding: 0 24px 30px;
+}
+
+/* =========================
+   検索
+========================= */
+
+.search {
+    width: 100%;
+    height: 46px;
+
+    border: 0;
+    border-radius: 24px;
+
+    padding: 0 18px;
+
+    background: #242424;
+    color: #fff;
+
+    font-size: 15px;
+    outline: none;
+}
+
+.search::placeholder {
+    color: #888;
+}
+
+.search:focus {
+    background: #2c2c2c;
+}
+
+/* =========================
+   ステータス
+========================= */
+
+.status {
+    margin: 20px 4px 12px;
+    color: #999;
+    font-size: 13px;
+}
+
+/* =========================
+   曲一覧
+========================= */
+
+.song {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 12px 14px;
+    margin-bottom: 4px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.song:hover {
+    background: #242424;
+}
+
+.song-number {
+    width: 28px;
+    flex-shrink: 0;
+
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+}
+
+.song-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.song-title {
+    font-size: 15px;
+    line-height: 1.4;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.song-size {
+    margin-top: 3px;
+    color: #777;
+    font-size: 11px;
+}
+
+.play-button {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #111;
+
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.play-button:hover {
+    transform: scale(1.04);
+}
+
+.download {
+    flex-shrink: 0;
+
+    color: #aaa;
+    text-decoration: none;
+
+    font-size: 13px;
+}
+
+.download:hover {
+    color: #fff;
+}
+
+/* =========================
+   空表示
+========================= */
+
+.empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: #777;
+}
+
+/* =========================
+   プレイヤー
+========================= */
+
+.player {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 1000;
+
+    height: 92px;
+
+    background: #181818;
+    border-top: 1px solid #303030;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(150px, 1fr)
+        minmax(300px, 2fr)
+        minmax(150px, 1fr);
+
+    align-items: center;
+
+    padding: 10px 24px;
+}
+
+/* 曲情報 */
+
+.now-playing {
+    min-width: 0;
+}
+
+.now-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.now-sub {
+    margin-top: 4px;
+    color: #888;
+    font-size: 11px;
+}
+
+/* 中央操作 */
+
+.controls {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.control {
+    border: 0;
+    background: transparent;
+    color: #ddd;
+
+    cursor: pointer;
+    font-size: 17px;
+}
+
+.control:hover {
+    color: #fff;
+}
+
+.main-play {
+    width: 36px;
+    height: 36px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #111;
+
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 8px;
+}
+
+.time {
+    width: 35px;
+
+    color: #888;
+    font-size: 10px;
+
+    text-align: center;
+}
+
+.progress {
+    flex: 1;
+
+    height: 4px;
+
+    accent-color: #fff;
+    cursor: pointer;
+}
+
+/* 音量 */
+
+.volume {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.volume-slider {
+    width: 100px;
+    accent-color: #fff;
+}
+
+/* 実際のaudioは非表示 */
+
+audio {
+    display: none;
+}
+
+/* =========================
+   スマホ
+========================= */
+
+@media (max-width: 700px) {
+
     body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        min-height: 100%;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            "Noto Sans JP",
-            sans-serif;
+        padding-bottom: 145px;
     }
 
-    body {
-        overflow-x: hidden;
+    header {
+        padding: 22px 16px 16px;
     }
 
-    button,
-    input {
-        font: inherit;
+    header h1 {
+        font-size: 23px;
     }
 
-    /* ==========================================
-       レイアウト
-    ========================================== */
-
-    .app {
-        min-height: 100vh;
-        padding-bottom: 92px;
-    }
-
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 92px;
-
-        width: 240px;
-
-        background: var(--sidebar);
-
-        padding: 24px 16px;
-
-        z-index: 10;
-    }
-
-    .logo {
-        padding: 0 12px 30px;
-
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-    }
-
-    .logo span {
-        color: var(--accent);
-    }
-
-    .nav {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .nav-button {
-        width: 100%;
-
-        border: 0;
-        background: transparent;
-        color: var(--subtext);
-
-        padding: 12px;
-
-        border-radius: 8px;
-
-        text-align: left;
-
-        cursor: pointer;
-
-        font-size: 14px;
-        font-weight: 600;
-
-        transition: 0.15s;
-    }
-
-    .nav-button:hover,
-    .nav-button.active {
-        background: #181818;
-        color: white;
-    }
-
-    .nav-icon {
-        display: inline-block;
-        width: 25px;
-        font-size: 18px;
-        vertical-align: middle;
-    }
-
-    /* ==========================================
-       メイン
-    ========================================== */
-
-    .main {
-        margin-left: 240px;
-
-        min-height: calc(100vh - 92px);
-
-        padding: 28px 34px 40px;
-
-        background:
-            linear-gradient(
-                to bottom,
-                #181818 0,
-                #101010 230px,
-                #000000 480px
-            );
-    }
-
-    .topbar {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-
-        margin-bottom: 34px;
-    }
-
-    .search-wrapper {
-        position: relative;
-
-        flex: 1;
-
-        max-width: 600px;
-    }
-
-    .search-icon {
-        position: absolute;
-
-        left: 15px;
-        top: 50%;
-
-        transform: translateY(-50%);
-
-        color: #777;
-
-        font-size: 18px;
-
-        pointer-events: none;
+    main {
+        padding: 0 12px 20px;
     }
 
     .search {
-        width: 100%;
-
-        height: 46px;
-
-        border: none;
-        outline: none;
-
-        border-radius: 24px;
-
-        background: #ffffff;
-        color: #111;
-
-        padding: 0 18px 0 44px;
-
-        font-size: 15px;
-    }
-
-    .search::placeholder {
-        color: #777;
-    }
-
-    .refresh {
-        width: 44px;
         height: 44px;
-
-        border: 0;
-        border-radius: 50%;
-
-        background: #242424;
-        color: white;
-
-        cursor: pointer;
-
-        font-size: 18px;
-    }
-
-    .refresh:hover {
-        background: #333;
-    }
-
-    /* ==========================================
-       ヒーロー
-    ========================================== */
-
-    .hero {
-        margin-bottom: 34px;
-    }
-
-    .hero h1 {
-        margin: 0;
-
-        font-size: clamp(28px, 5vw, 48px);
-        line-height: 1.1;
-
-        letter-spacing: -1.5px;
-    }
-
-    .hero p {
-        margin: 10px 0 0;
-
-        color: var(--subtext);
-
-        font-size: 14px;
-    }
-
-    /* ==========================================
-       ステータス
-    ========================================== */
-
-    .status {
-        margin-bottom: 12px;
-
-        color: var(--subtext);
-
-        font-size: 13px;
-    }
-
-    /* ==========================================
-       曲一覧
-    ========================================== */
-
-    .song-list {
-        width: 100%;
-    }
-
-    .song-header {
-        display: grid;
-
-        grid-template-columns:
-            42px
-            minmax(0, 1fr)
-            90px
-            110px;
-
-        align-items: center;
-
-        padding: 0 14px 8px;
-
-        border-bottom: 1px solid var(--border);
-
-        color: #777;
-
-        font-size: 12px;
     }
 
     .song {
-        display: grid;
-
-        grid-template-columns:
-            42px
-            minmax(0, 1fr)
-            90px
-            110px;
-
-        align-items: center;
-
-        min-height: 62px;
-
-        padding: 7px 14px;
-
-        border-radius: 7px;
-
-        cursor: pointer;
-
-        transition:
-            background 0.15s;
-    }
-
-    .song:hover {
-        background: var(--panel-hover);
-    }
-
-    .song.playing {
-        background: #181818;
+        padding: 11px 8px;
+        gap: 8px;
     }
 
     .song-number {
-        color: #777;
-        font-size: 14px;
-    }
-
-    .song.playing .song-number {
-        color: var(--accent);
-    }
-
-    .song-info {
-        min-width: 0;
+        width: 22px;
     }
 
     .song-title {
-        overflow: hidden;
-
-        white-space: nowrap;
-        text-overflow: ellipsis;
-
-        color: white;
-
-        font-size: 15px;
-        font-weight: 500;
+        font-size: 14px;
     }
 
-    .song-subtitle {
-        margin-top: 3px;
-
-        color: #888;
-
-        font-size: 12px;
-    }
-
-    .song-size {
-        color: #888;
-        font-size: 12px;
-    }
-
-    .song-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 7px;
-    }
-
-    .icon-button {
-        width: 36px;
-        height: 36px;
-
-        border: 0;
-        border-radius: 50%;
-
-        background: transparent;
-        color: #aaa;
-
-        cursor: pointer;
-
-        font-size: 16px;
-    }
-
-    .icon-button:hover {
-        background: #292929;
-        color: white;
-    }
-
-    .empty {
-        padding: 80px 20px;
-
-        text-align: center;
-
-        color: #777;
-    }
-
-    /* ==========================================
-       ローディング
-    ========================================== */
-
-    .loading {
-        padding: 60px 20px;
-
-        text-align: center;
-
-        color: #999;
-    }
-
-    .spinner {
-        width: 26px;
-        height: 26px;
-
-        margin: 0 auto 14px;
-
-        border: 3px solid #333;
-        border-top-color: var(--accent);
-
-        border-radius: 50%;
-
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* ==========================================
-       プレイヤー
-    ========================================== */
-
-    .player {
-        position: fixed;
-
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        height: 92px;
-
-        background: #181818;
-
-        border-top: 1px solid #292929;
-
-        z-index: 100;
-
-        display: grid;
-
-        grid-template-columns:
-            minmax(170px, 1fr)
-            minmax(300px, 2fr)
-            minmax(170px, 1fr);
-
-        align-items: center;
-
-        gap: 20px;
-
-        padding: 10px 18px;
-    }
-
-    .now-playing {
-        min-width: 0;
-    }
-
-    .now-playing-title {
-        overflow: hidden;
-
-        white-space: nowrap;
-        text-overflow: ellipsis;
-
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .now-playing-subtitle {
-        overflow: hidden;
-
-        white-space: nowrap;
-        text-overflow: ellipsis;
-
-        margin-top: 4px;
-
-        color: #888;
-
-        font-size: 11px;
-    }
-
-    .controls {
-        display: flex;
-
-        flex-direction: column;
-
-        align-items: center;
-
-        gap: 5px;
-    }
-
-    .control-buttons {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-    }
-
-    .control-button {
-        width: 30px;
-        height: 30px;
-
-        padding: 0;
-
-        border: 0;
-
-        background: transparent;
-        color: #b3b3b3;
-
-        cursor: pointer;
-
-        font-size: 17px;
-    }
-
-    .control-button:hover {
-        color: white;
-        transform: scale(1.05);
-    }
-
-    .control-button.active {
-        color: var(--accent);
-    }
-
-    .play-button {
-        width: 34px;
-        height: 34px;
-
-        border-radius: 50%;
-
-        background: white;
-        color: black;
-
-        font-size: 16px;
-    }
-
-    .play-button:hover {
-        background: white;
-        color: black;
-
-        transform: scale(1.06);
-    }
-
-    .progress-area {
-        display: flex;
-
-        align-items: center;
-
-        width: min(600px, 100%);
-
-        gap: 8px;
-    }
-
-    .time {
-        min-width: 35px;
-
-        color: #999;
-
-        font-size: 10px;
-
-        text-align: center;
-    }
-
-    .progress {
-        appearance: none;
-
-        width: 100%;
-        height: 4px;
-
-        border-radius: 2px;
-
-        background: #555;
-
-        cursor: pointer;
-    }
-
-    .progress::-webkit-slider-thumb {
-        appearance: none;
-
-        width: 11px;
-        height: 11px;
-
-        border-radius: 50%;
-
-        background: white;
-
-        opacity: 0;
-    }
-
-    .progress:hover::-webkit-slider-thumb {
-        opacity: 1;
-    }
-
-    .volume {
-        display: flex;
-
-        justify-content: flex-end;
-        align-items: center;
-
-        gap: 8px;
-    }
-
-    .volume-icon {
-        color: #aaa;
-        font-size: 15px;
-    }
-
-    .volume-slider {
-        appearance: none;
-
-        width: 100px;
-        height: 4px;
-
-        background: #555;
-
-        border-radius: 2px;
-    }
-
-    .volume-slider::-webkit-slider-thumb {
-        appearance: none;
-
-        width: 11px;
-        height: 11px;
-
-        border-radius: 50%;
-
-        background: white;
-
-        cursor: pointer;
-    }
-
-    /* ==========================================
-       オリジナルaudioは非表示
-    ========================================== */
-
-    audio {
+    .download {
         display: none;
     }
 
-    /* ==========================================
-       スマホ
-    ========================================== */
+    /* スマホではプレイヤーを縦型に */
 
-    @media (max-width: 800px) {
+    .player {
+        height: 135px;
 
-        .sidebar {
-            display: none;
-        }
+        display: block;
 
-        .main {
-            margin-left: 0;
-
-            padding:
-                20px
-                16px
-                30px;
-
-            background:
-                linear-gradient(
-                    to bottom,
-                    #181818,
-                    #0b0b0b 330px,
-                    #000
-                );
-        }
-
-        .topbar {
-            margin-bottom: 25px;
-        }
-
-        .hero {
-            margin-bottom: 25px;
-        }
-
-        .hero h1 {
-            font-size: 30px;
-        }
-
-        .song-header {
-            display: none;
-        }
-
-        .song {
-            grid-template-columns:
-                34px
-                minmax(0, 1fr)
-                42px;
-
-            min-height: 64px;
-
-            padding: 7px 4px;
-        }
-
-        .song-size {
-            display: none;
-        }
-
-        .song-actions {
-            gap: 0;
-        }
-
-        .song-actions .download-button {
-            display: none;
-        }
-
-        .icon-button {
-            width: 38px;
-            height: 38px;
-        }
-
-        .player {
-            height: 82px;
-
-            grid-template-columns: 1fr auto;
-
-            gap: 10px;
-
-            padding:
-                8px
-                12px;
-        }
-
-        .controls {
-            align-items: flex-end;
-        }
-
-        .control-buttons {
-            gap: 9px;
-        }
-
-        .control-button.shuffle,
-        .control-button.repeat {
-            display: none;
-        }
-
-        .progress-area {
-            position: absolute;
-
-            left: 0;
-            right: 0;
-            bottom: 0;
-
-            width: 100%;
-
-            gap: 0;
-        }
-
-        .progress {
-            height: 3px;
-
-            border-radius: 0;
-        }
-
-        .time {
-            display: none;
-        }
-
-        .volume {
-            display: none;
-        }
-
-        .now-playing-title {
-            font-size: 12px;
-        }
-
-        .now-playing-subtitle {
-            font-size: 10px;
-        }
-
-        .play-button {
-            width: 38px;
-            height: 38px;
-        }
+        padding: 10px 14px;
     }
 
-    @media (max-width: 430px) {
-
-        .main {
-            padding-left: 12px;
-            padding-right: 12px;
-        }
-
-        .search {
-            height: 44px;
-        }
-
-        .refresh {
-            width: 42px;
-            height: 42px;
-        }
-
-        .song-title {
-            font-size: 14px;
-        }
-
-        .song-subtitle {
-            font-size: 11px;
-        }
-
-        .player {
-            grid-template-columns:
-                minmax(0, 1fr)
-                auto;
-        }
+    .now-playing {
+        text-align: center;
     }
+
+    .now-title {
+        font-size: 13px;
+    }
+
+    .now-sub {
+        display: none;
+    }
+
+    .controls {
+        max-width: none;
+    }
+
+    .buttons {
+        margin-top: 7px;
+        gap: 24px;
+    }
+
+    .progress-row {
+        margin-top: 7px;
+    }
+
+    .volume {
+        display: none;
+    }
+}
 </style>
-```
-
 </head>
 
 <body>
 
-<div class="app">
+<header>
+    <h1>🎵 音声ファイル</h1>
+    <p>My Audio Library</p>
+</header>
 
-```
-<!-- ==========================================
-     サイドバー
-========================================== -->
+<main>
 
-<aside class="sidebar">
-
-    <div class="logo">
-        <span>●</span> 音声ファイル
-    </div>
-
-    <nav class="nav">
-
-        <button
-            class="nav-button active"
-            id="homeButton"
-        >
-            <span class="nav-icon">⌂</span>
-            ホーム
-        </button>
-
-        <button
-            class="nav-button"
-            id="refreshButton"
-        >
-            <span class="nav-icon">↻</span>
-            更新
-        </button>
-
-    </nav>
-
-</aside>
-
-
-<!-- ==========================================
-     メイン
-========================================== -->
-
-<main class="main">
-
-    <div class="topbar">
-
-        <div class="search-wrapper">
-
-            <span class="search-icon">⌕</span>
-
-            <input
-                id="search"
-                class="search"
-                type="search"
-                placeholder="曲名を検索"
-                autocomplete="off"
-            >
-
-        </div>
-
-        <button
-            id="refresh"
-            class="refresh"
-            title="更新"
-            aria-label="更新"
-        >
-            ↻
-        </button>
-
-    </div>
-
-
-    <section class="hero">
-
-        <h1>音声ファイル</h1>
-
-        <p>
-            GitHub Releasesから音声を自動取得
-        </p>
-
-    </section>
-
-
-    <div
-        id="status"
-        class="status"
+    <input
+        id="search"
+        class="search"
+        type="search"
+        placeholder="曲名を検索..."
     >
-        音声ファイルを取得しています...
+
+    <div id="status" class="status">
+        読み込み中...
     </div>
 
-
-    <div class="song-list">
-
-        <div class="song-header">
-
-            <div>#</div>
-            <div>タイトル</div>
-            <div>サイズ</div>
-            <div></div>
-
-        </div>
-
-        <div id="songs">
-
-            <div class="loading">
-
-                <div class="spinner"></div>
-
-                音声ファイルを読み込んでいます...
-
-            </div>
-
-        </div>
-
-    </div>
+    <div id="songs"></div>
 
 </main>
-```
 
-</div>
-
-<!-- ==========================================
+<!-- =========================
      プレイヤー
-========================================== -->
+========================= -->
 
 <div class="player">
 
-```
-<div class="now-playing">
+    <div class="now-playing">
+        <div id="nowTitle" class="now-title">
+            曲を選択してください
+        </div>
 
-    <div
-        id="nowTitle"
-        class="now-playing-title"
-    >
-        再生する曲を選択してください
+        <div class="now-sub">
+            My Audio Library
+        </div>
     </div>
 
-    <div
-        id="nowSubtitle"
-        class="now-playing-subtitle"
-    >
-        音声ファイル
-    </div>
+    <div class="controls">
 
-</div>
+        <div class="buttons">
 
+            <button
+                id="prev"
+                class="control"
+                title="前の曲"
+            >⏮</button>
 
-<div class="controls">
+            <button
+                id="play"
+                class="main-play"
+                title="再生"
+            >▶</button>
 
-    <div class="control-buttons">
+            <button
+                id="next"
+                class="control"
+                title="次の曲"
+            >⏭</button>
 
-        <button
-            id="shuffle"
-            class="control-button shuffle"
-            title="シャッフル"
-            aria-label="シャッフル"
-        >
-            🔀
-        </button>
+        </div>
 
-        <button
-            id="previous"
-            class="control-button"
-            title="前の曲"
-            aria-label="前の曲"
-        >
-            ⏮
-        </button>
+        <div class="progress-row">
 
-        <button
-            id="play"
-            class="control-button play-button"
-            title="再生"
-            aria-label="再生"
-        >
-            ▶
-        </button>
+            <span id="currentTime" class="time">
+                0:00
+            </span>
 
-        <button
-            id="next"
-            class="control-button"
-            title="次の曲"
-            aria-label="次の曲"
-        >
-            ⏭
-        </button>
+            <input
+                id="progress"
+                class="progress"
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+            >
 
-        <button
-            id="repeat"
-            class="control-button repeat"
-            title="リピート"
-            aria-label="リピート"
-        >
-            🔁
-        </button>
+            <span id="duration" class="time">
+                0:00
+            </span>
+
+        </div>
 
     </div>
 
+    <div class="volume">
 
-    <div class="progress-area">
-
-        <span
-            id="currentTime"
-            class="time"
-        >
-            0:00
-        </span>
+        🔊
 
         <input
-            id="progress"
-            class="progress"
+            id="volume"
+            class="volume-slider"
             type="range"
             min="0"
-            max="100"
-            value="0"
-            step="0.1"
+            max="1"
+            step="0.01"
+            value="1"
         >
-
-        <span
-            id="duration"
-            class="time"
-        >
-            0:00
-        </span>
 
     </div>
 
 </div>
 
-
-<div class="volume">
-
-    <span class="volume-icon">
-        🔊
-    </span>
-
-    <input
-        id="volume"
-        class="volume-slider"
-        type="range"
-        min="0"
-        max="1"
-        step="0.01"
-        value="1"
-    >
-
-</div>
-```
-
-</div>
-
-<audio id="audio"></audio>
+<audio id="audio" preload="metadata"></audio>
 
 <script>
-
-/* ==========================================
-   GitHub設定
-========================================== */
 
 const OWNER = "aoaoaoreinn-a11y";
 const REPO = "yt";
@@ -1071,41 +538,11 @@ const RELEASE_TAG = "audio";
 const API_URL =
     `https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/${RELEASE_TAG}`;
 
-
-/* ==========================================
-   状態
-========================================== */
-
 let songs = [];
-
 let currentIndex = -1;
-
-let shuffled = false;
-
-let repeating = false;
-
-
-/* ==========================================
-   DOM
-========================================== */
 
 const audio =
     document.getElementById("audio");
-
-const songsContainer =
-    document.getElementById("songs");
-
-const search =
-    document.getElementById("search");
-
-const status =
-    document.getElementById("status");
-
-const nowTitle =
-    document.getElementById("nowTitle");
-
-const nowSubtitle =
-    document.getElementById("nowSubtitle");
 
 const playButton =
     document.getElementById("play");
@@ -1113,51 +550,34 @@ const playButton =
 const progress =
     document.getElementById("progress");
 
-const currentTimeElement =
+const currentTime =
     document.getElementById("currentTime");
 
-const durationElement =
+const duration =
     document.getElementById("duration");
 
-const volume =
-    document.getElementById("volume");
-
-const shuffleButton =
-    document.getElementById("shuffle");
-
-const repeatButton =
-    document.getElementById("repeat");
+const nowTitle =
+    document.getElementById("nowTitle");
 
 
-/* ==========================================
-   GitHub Release取得
-========================================== */
+/* =========================
+   GitHubから取得
+========================= */
 
 async function loadSongs() {
 
-    status.textContent =
-        "音声ファイルを取得しています...";
-
-    songsContainer.innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            音声ファイルを読み込んでいます...
-        </div>
-    `;
+    const status =
+        document.getElementById("status");
 
     try {
 
         const response =
-            await fetch(
-                API_URL + "?t=" + Date.now()
-            );
+            await fetch(API_URL);
 
         if (!response.ok) {
-
             throw new Error(
                 `HTTP ${response.status}`
             );
-
         }
 
         const release =
@@ -1165,40 +585,17 @@ async function loadSongs() {
 
         songs =
             release.assets
-
                 .filter(asset =>
                     asset.name
                         .toLowerCase()
                         .endsWith(".opus")
                 )
-
                 .map(asset => ({
-
-                    name:
-                        asset.name,
-
-                    title:
-                        asset.label ||
-                        asset.name,
-
-                    url:
-                        asset.browser_download_url,
-
-                    size:
-                        asset.size
-
+                    name: asset.name,
+                    title: asset.label || asset.name,
+                    url: asset.browser_download_url,
+                    size: asset.size
                 }));
-
-        /*
-         * タイトル順に並べる
-         */
-
-        songs.sort((a, b) =>
-            a.title.localeCompare(
-                b.title,
-                "ja"
-            )
-        );
 
         renderSongs();
 
@@ -1208,30 +605,339 @@ async function loadSongs() {
 
         status.textContent =
             "音声ファイルを取得できませんでした。";
-
-        songsContainer.innerHTML = `
-            <div class="empty">
-                音声ファイルを取得できませんでした。<br>
-                <small>
-                    しばらく待ってから更新してください。
-                </small>
-            </div>
-        `;
-
     }
-
 }
 
 
-/* ==========================================
-   サイズ表示
-========================================== */
+/* =========================
+   一覧表示
+========================= */
+
+function renderSongs() {
+
+    const container =
+        document.getElementById("songs");
+
+    const status =
+        document.getElementById("status");
+
+    const keyword =
+        document
+            .getElementById("search")
+            .value
+            .toLowerCase();
+
+    container.innerHTML = "";
+
+    const filtered =
+        songs.filter(song =>
+            song.title
+                .toLowerCase()
+                .includes(keyword)
+        );
+
+    status.textContent =
+        `${filtered.length}曲`;
+
+    if (!filtered.length) {
+
+        container.innerHTML = `
+            <div class="empty">
+                曲が見つかりません。
+            </div>
+        `;
+
+        return;
+    }
+
+    filtered.forEach((song, index) => {
+
+        const realIndex =
+            songs.indexOf(song);
+
+        const element =
+            document.createElement("div");
+
+        element.className = "song";
+
+        element.innerHTML = `
+            <div class="song-number">
+                ${index + 1}
+            </div>
+
+            <div class="song-info">
+                <div class="song-title">
+                    ${escapeHtml(song.title)}
+                </div>
+
+                <div class="song-size">
+                    ${formatSize(song.size)}
+                </div>
+            </div>
+
+            <a
+                class="download"
+                href="${escapeAttribute(song.url)}"
+                download
+                title="ダウンロード"
+                onclick="event.stopPropagation()"
+            >
+                ↓
+            </a>
+
+            <button
+                class="play-button"
+                title="再生"
+                onclick="playSong(${realIndex}); event.stopPropagation();"
+            >
+                ▶
+            </button>
+        `;
+
+        element.addEventListener(
+            "click",
+            () => playSong(realIndex)
+        );
+
+        container.appendChild(element);
+    });
+}
+
+
+/* =========================
+   曲を再生
+========================= */
+
+function playSong(index) {
+
+    if (!songs[index]) return;
+
+    currentIndex = index;
+
+    const song =
+        songs[index];
+
+    audio.src = song.url;
+
+    nowTitle.textContent =
+        song.title;
+
+    audio.play()
+        .then(() => {
+            playButton.textContent = "Ⅱ";
+        })
+        .catch(() => {
+            playButton.textContent = "▶";
+        });
+}
+
+
+/* =========================
+   再生 / 一時停止
+========================= */
+
+playButton.addEventListener(
+    "click",
+    () => {
+
+        if (currentIndex === -1) {
+
+            if (songs.length) {
+                playSong(0);
+            }
+
+            return;
+        }
+
+        if (audio.paused) {
+
+            audio.play();
+
+        } else {
+
+            audio.pause();
+
+        }
+    }
+);
+
+audio.addEventListener(
+    "play",
+    () => {
+        playButton.textContent = "Ⅱ";
+    }
+);
+
+audio.addEventListener(
+    "pause",
+    () => {
+        playButton.textContent = "▶";
+    }
+);
+
+
+/* =========================
+   前の曲
+========================= */
+
+document
+    .getElementById("prev")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!songs.length) return;
+
+            const index =
+                currentIndex <= 0
+                    ? songs.length - 1
+                    : currentIndex - 1;
+
+            playSong(index);
+        }
+    );
+
+
+/* =========================
+   次の曲
+========================= */
+
+document
+    .getElementById("next")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!songs.length) return;
+
+            const index =
+                currentIndex >= songs.length - 1
+                    ? 0
+                    : currentIndex + 1;
+
+            playSong(index);
+        }
+    );
+
+
+/* =========================
+   自動で次の曲
+========================= */
+
+audio.addEventListener(
+    "ended",
+    () => {
+
+        if (!songs.length) return;
+
+        const next =
+            currentIndex >= songs.length - 1
+                ? 0
+                : currentIndex + 1;
+
+        playSong(next);
+    }
+);
+
+
+/* =========================
+   シークバー
+========================= */
+
+audio.addEventListener(
+    "loadedmetadata",
+    () => {
+
+        duration.textContent =
+            formatTime(audio.duration);
+
+        progress.value = 0;
+    }
+);
+
+audio.addEventListener(
+    "timeupdate",
+    () => {
+
+        if (!audio.duration) return;
+
+        progress.value =
+            (audio.currentTime /
+                audio.duration) * 100;
+
+        currentTime.textContent =
+            formatTime(audio.currentTime);
+    }
+);
+
+progress.addEventListener(
+    "input",
+    () => {
+
+        if (!audio.duration) return;
+
+        audio.currentTime =
+            (progress.value / 100) *
+            audio.duration;
+    }
+);
+
+
+/* =========================
+   音量
+========================= */
+
+document
+    .getElementById("volume")
+    .addEventListener(
+        "input",
+        event => {
+
+            audio.volume =
+                event.target.value;
+        }
+    );
+
+
+/* =========================
+   検索
+========================= */
+
+document
+    .getElementById("search")
+    .addEventListener(
+        "input",
+        renderSongs
+    );
+
+
+/* =========================
+   時間
+========================= */
+
+function formatTime(seconds) {
+
+    if (!Number.isFinite(seconds)) {
+        return "0:00";
+    }
+
+    const min =
+        Math.floor(seconds / 60);
+
+    const sec =
+        Math.floor(seconds % 60)
+            .toString()
+            .padStart(2, "0");
+
+    return `${min}:${sec}`;
+}
+
+
+/* =========================
+   ファイルサイズ
+========================= */
 
 function formatSize(bytes) {
-
-    if (!bytes) {
-        return "不明";
-    }
 
     if (bytes < 1024) {
         return `${bytes} B`;
@@ -1242,691 +948,37 @@ function formatSize(bytes) {
     }
 
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-
 }
 
 
-/* ==========================================
-   時間表示
-========================================== */
-
-function formatTime(seconds) {
-
-    if (!Number.isFinite(seconds)) {
-        return "0:00";
-    }
-
-    const minutes =
-        Math.floor(seconds / 60);
-
-    const secondsPart =
-        Math.floor(seconds % 60)
-            .toString()
-            .padStart(2, "0");
-
-    return `${minutes}:${secondsPart}`;
-
-}
-
-
-/* ==========================================
-   曲一覧
-========================================== */
-
-function renderSongs() {
-
-    const query =
-        search.value
-            .trim()
-            .toLowerCase();
-
-    const filtered =
-        songs.filter(song =>
-            song.title
-                .toLowerCase()
-                .includes(query)
-        );
-
-    status.textContent =
-        `${filtered.length}曲`;
-
-    songsContainer.innerHTML = "";
-
-    if (filtered.length === 0) {
-
-        songsContainer.innerHTML = `
-            <div class="empty">
-                該当する音声ファイルがありません。
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    filtered.forEach(
-        (song, index) => {
-
-            /*
-             * 元の配列内でのインデックス
-             */
-
-            const realIndex =
-                songs.indexOf(song);
-
-            const element =
-                document.createElement("div");
-
-            element.className = "song";
-
-            if (
-                realIndex === currentIndex
-            ) {
-                element.classList.add("playing");
-            }
-
-
-            element.innerHTML = `
-
-                <div class="song-number">
-                    ${index + 1}
-                </div>
-
-                <div class="song-info">
-
-                    <div class="song-title">
-                        ${escapeHtml(song.title)}
-                    </div>
-
-                    <div class="song-subtitle">
-                        Opus
-                    </div>
-
-                </div>
-
-                <div class="song-size">
-                    ${formatSize(song.size)}
-                </div>
-
-                <div class="song-actions">
-
-                    <button
-                        class="icon-button"
-                        title="再生"
-                        aria-label="再生"
-                    >
-                        ▶
-                    </button>
-
-                    <a
-                        class="icon-button download-button"
-                        href="${escapeAttribute(song.url)}"
-                        download
-                        title="ダウンロード"
-                        aria-label="ダウンロード"
-                        style="
-                            display:flex;
-                            align-items:center;
-                            justify-content:center;
-                            text-decoration:none;
-                        "
-                    >
-                        ↓
-                    </a>
-
-                </div>
-            `;
-
-
-            /*
-             * 行クリックで再生
-             */
-
-            element.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target.closest("a") ||
-                        event.target.closest("button")
-                    ) {
-                        return;
-                    }
-
-                    playSong(realIndex);
-
-                }
-            );
-
-
-            /*
-             * 再生ボタン
-             */
-
-            const playSongButton =
-                element.querySelector(
-                    ".icon-button"
-                );
-
-            playSongButton.addEventListener(
-                "click",
-                event => {
-
-                    event.stopPropagation();
-
-                    playSong(realIndex);
-
-                }
-            );
-
-
-            songsContainer.appendChild(
-                element
-            );
-
-        }
-    );
-
-}
-
-
-/* ==========================================
-   曲を再生
-========================================== */
-
-function playSong(index) {
-
-    if (
-        index < 0 ||
-        index >= songs.length
-    ) {
-        return;
-    }
-
-    currentIndex = index;
-
-    const song =
-        songs[index];
-
-    audio.src =
-        song.url;
-
-    audio.load();
-
-    audio.play()
-        .catch(error => {
-            console.error(error);
-        });
-
-    nowTitle.textContent =
-        song.title;
-
-    nowSubtitle.textContent =
-        `Opus · ${formatSize(song.size)}`;
-
-    playButton.textContent =
-        "❚❚";
-
-    renderSongs();
-
-}
-
-
-/* ==========================================
-   再生 / 停止
-========================================== */
-
-function togglePlay() {
-
-    if (currentIndex === -1) {
-
-        if (songs.length > 0) {
-            playSong(0);
-        }
-
-        return;
-    }
-
-
-    if (audio.paused) {
-
-        audio.play();
-
-        playButton.textContent =
-            "❚❚";
-
-    } else {
-
-        audio.pause();
-
-        playButton.textContent =
-            "▶";
-
-    }
-
-}
-
-
-playButton.addEventListener(
-    "click",
-    togglePlay
-);
-
-
-/* ==========================================
-   前の曲
-========================================== */
-
-document
-    .getElementById("previous")
-    .addEventListener(
-        "click",
-        () => {
-
-            if (!songs.length) {
-                return;
-            }
-
-            let index;
-
-            if (shuffled) {
-
-                index =
-                    Math.floor(
-                        Math.random() *
-                        songs.length
-                    );
-
-            } else {
-
-                index =
-                    currentIndex <= 0
-                        ? songs.length - 1
-                        : currentIndex - 1;
-
-            }
-
-            playSong(index);
-
-        }
-    );
-
-
-/* ==========================================
-   次の曲
-========================================== */
-
-document
-    .getElementById("next")
-    .addEventListener(
-        "click",
-        () => {
-
-            if (!songs.length) {
-                return;
-            }
-
-            let index;
-
-            if (shuffled) {
-
-                index =
-                    Math.floor(
-                        Math.random() *
-                        songs.length
-                    );
-
-            } else {
-
-                index =
-                    currentIndex >= songs.length - 1
-                        ? 0
-                        : currentIndex + 1;
-
-            }
-
-            playSong(index);
-
-        }
-    );
-
-
-/* ==========================================
-   シャッフル
-========================================== */
-
-shuffleButton.addEventListener(
-    "click",
-    () => {
-
-        shuffled =
-            !shuffled;
-
-        shuffleButton.classList.toggle(
-            "active",
-            shuffled
-        );
-
-    }
-);
-
-
-/* ==========================================
-   リピート
-========================================== */
-
-repeatButton.addEventListener(
-    "click",
-    () => {
-
-        repeating =
-            !repeating;
-
-        repeatButton.classList.toggle(
-            "active",
-            repeating
-        );
-
-    }
-);
-
-
-/* ==========================================
-   曲終了
-========================================== */
-
-audio.addEventListener(
-    "ended",
-    () => {
-
-        if (repeating) {
-
-            audio.currentTime = 0;
-
-            audio.play();
-
-            return;
-
-        }
-
-        document
-            .getElementById("next")
-            .click();
-
-    }
-);
-
-
-/* ==========================================
-   再生状態
-========================================== */
-
-audio.addEventListener(
-    "play",
-    () => {
-
-        playButton.textContent =
-            "❚❚";
-
-    }
-);
-
-
-audio.addEventListener(
-    "pause",
-    () => {
-
-        playButton.textContent =
-            "▶";
-
-    }
-);
-
-
-/* ==========================================
-   時間更新
-========================================== */
-
-audio.addEventListener(
-    "timeupdate",
-    () => {
-
-        if (!audio.duration) {
-            return;
-        }
-
-        const percentage =
-            (audio.currentTime /
-            audio.duration) * 100;
-
-        progress.value =
-            percentage;
-
-        currentTimeElement.textContent =
-            formatTime(
-                audio.currentTime
-            );
-
-        durationElement.textContent =
-            formatTime(
-                audio.duration
-            );
-
-    }
-);
-
-
-/* ==========================================
-   シーク
-========================================== */
-
-progress.addEventListener(
-    "input",
-    () => {
-
-        if (!audio.duration) {
-            return;
-        }
-
-        audio.currentTime =
-            (progress.value / 100) *
-            audio.duration;
-
-    }
-);
-
-
-/* ==========================================
-   音量
-========================================== */
-
-volume.addEventListener(
-    "input",
-    () => {
-
-        audio.volume =
-            Number(volume.value);
-
-    }
-);
-
-
-/* ==========================================
-   検索
-========================================== */
-
-search.addEventListener(
-    "input",
-    renderSongs
-);
-
-
-/* ==========================================
-   更新
-========================================== */
-
-document
-    .getElementById("refresh")
-    .addEventListener(
-        "click",
-        loadSongs
-    );
-
-
-document
-    .getElementById("refreshButton")
-    .addEventListener(
-        "click",
-        loadSongs
-    );
-
-
-/* ==========================================
-   ホーム
-========================================== */
-
-document
-    .getElementById("homeButton")
-    .addEventListener(
-        "click",
-        () => {
-
-            search.value = "";
-
-            renderSongs();
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-
-        }
-    );
-
-
-/* ==========================================
+/* =========================
    HTMLエスケープ
-========================================== */
+========================= */
 
 function escapeHtml(text) {
 
     const div =
         document.createElement("div");
 
-    div.textContent =
-        text;
+    div.textContent = text;
 
     return div.innerHTML;
-
 }
 
 
 function escapeAttribute(text) {
 
     return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        );
-
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 
-/* ==========================================
-   キーボード操作
-========================================== */
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        /*
-         * 入力欄ではショートカットを無効
-         */
-
-        if (
-            event.target.tagName ===
-            "INPUT"
-        ) {
-            return;
-        }
-
-
-        /*
-         * Space
-         */
-
-        if (
-            event.code ===
-            "Space"
-        ) {
-
-            event.preventDefault();
-
-            togglePlay();
-
-        }
-
-
-        /*
-         * ←
-         */
-
-        if (
-            event.code ===
-            "ArrowLeft"
-        ) {
-
-            audio.currentTime =
-                Math.max(
-                    0,
-                    audio.currentTime - 5
-                );
-
-        }
-
-
-        /*
-         * →
-         */
-
-        if (
-            event.code ===
-            "ArrowRight"
-        ) {
-
-            if (audio.duration) {
-
-                audio.currentTime =
-                    Math.min(
-                        audio.duration,
-                        audio.currentTime + 5
-                    );
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ==========================================
+/* =========================
    起動
-========================================== */
+========================= */
 
 loadSongs();
 
