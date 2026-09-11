@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 REPO_DIR="/workspaces/yt"
 DOWNLOAD_DIR="$REPO_DIR/downloads"
 EDGE_PROFILE="/tmp/edge-codespace"
+
+# GitHub Release
+RELEASE_TAG="audio"
+RELEASE_TITLE="Audio Files"
 
 mkdir -p "$DOWNLOAD_DIR"
 
@@ -19,6 +24,7 @@ if [[ -z "$URL" ]]; then
     exit 1
 fi
 
+# 必要なコマンドを確認
 if ! command -v yt-dlp >/dev/null 2>&1; then
     echo "エラー: yt-dlp が見つかりません。"
     exit 1
@@ -39,11 +45,25 @@ if ! command -v ffprobe >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v gh >/dev/null 2>&1; then
+    echo "エラー: GitHub CLI (gh) が見つかりません。"
+    exit 1
+fi
+
 if [[ ! -d "$EDGE_PROFILE" ]]; then
     echo "エラー: Edgeプロファイルが見つかりません。"
     echo
     echo "Edgeのプロファイル:"
     echo "$EDGE_PROFILE"
+    exit 1
+fi
+
+# GitHub認証確認
+if ! gh auth status >/dev/null 2>&1; then
+    echo "エラー: GitHub CLIにログインしていません。"
+    echo
+    echo "以下を実行してください:"
+    echo "gh auth login"
     exit 1
 fi
 
@@ -72,5 +92,82 @@ echo "================================"
 echo "      ダウンロード完了"
 echo "================================"
 echo
-echo "保存先:"
-echo "$DOWNLOAD_DIR"
+
+# 最新のopusファイルを取得
+OPUS_FILE=$(
+    find "$DOWNLOAD_DIR" \
+        -maxdepth 1 \
+        -type f \
+        -name '*.opus' \
+        -printf '%T@ %p\n' |
+    sort -nr |
+    head -n 1 |
+    cut -d' ' -f2-
+)
+
+if [[ -z "$OPUS_FILE" || ! -f "$OPUS_FILE" ]]; then
+    echo "エラー: .opusファイルが見つかりません。"
+    exit 1
+fi
+
+echo "アップロード対象:"
+echo "$OPUS_FILE"
+echo
+
+# YouTube動画IDを取得
+VIDEO_ID=$(
+    yt-dlp \
+        --js-runtimes node \
+        --cookies-from-browser "edge:$EDGE_PROFILE" \
+        --print id \
+        --skip-download \
+        --no-playlist \
+        "$URL"
+)
+
+if [[ -z "$VIDEO_ID" ]]; then
+    echo "エラー: YouTube動画IDを取得できませんでした。"
+    exit 1
+fi
+
+# GitHub Releaseが存在しなければ作成
+if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+    echo "GitHub Releaseを作成しています..."
+
+    gh release create "$RELEASE_TAG" \
+        --title "$RELEASE_TITLE" \
+        --notes "YouTube audio files" \
+        --latest=false
+fi
+
+# ghのglob対策
+UPLOAD_FILE="$DOWNLOAD_DIR/.upload-${VIDEO_ID}.opus"
+
+cp "$OPUS_FILE" "$UPLOAD_FILE"
+
+echo
+echo "GitHub Releasesへアップロードしています..."
+echo
+echo "アップロード名: ${VIDEO_ID}.opus"
+
+gh release upload \
+    "$RELEASE_TAG" \
+    "$UPLOAD_FILE" \
+    --clobber
+
+# 一時ファイル削除
+rm -f "$UPLOAD_FILE"
+
+echo
+echo "================================"
+echo "       アップロード完了"
+echo "================================"
+echo
+echo "ローカルファイル:"
+echo "$OPUS_FILE"
+echo
+echo "Release:"
+echo "$RELEASE_TAG"
+echo
+echo "GitHub Release:"
+gh release view "$RELEASE_TAG" --json url -q '.url'
