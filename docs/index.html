@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- favicon.icoへの不要な404を防止 -->
 <link rel="icon" href="data:,">
 
 <title>音声ファイル</title>
@@ -132,32 +133,31 @@ main {
     white-space: nowrap;
 }
 
-.song-size {
+.song-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
     margin-top: 3px;
+
     color: #777;
     font-size: 11px;
 }
 
-.song-status {
-    margin-top: 3px;
-
-    color: #777;
-    font-size: 10px;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
+.cache-status {
+    color: #888;
     white-space: nowrap;
 }
 
-.song-status.saving {
+.cache-status.saving {
     color: #aaa;
 }
 
-.song-status.cached {
+.cache-status.saved {
     color: #aaa;
 }
 
-.song-status.error {
+.cache-status.error {
     color: #777;
 }
 
@@ -384,6 +384,7 @@ audio {
 
     .now-sub {
         display: block;
+        font-size: 10px;
     }
 
     .controls {
@@ -546,15 +547,8 @@ let db = null;
 
 /* =========================================
    保存中の曲
+   同じ曲を複数回保存しないため
 ========================================= */
-
-/*
- * 同じ曲を何度もクリックした場合でも、
- * GASへの取得処理を重複させない。
- *
- * Map:
- *   videoId -> Promise
- */
 
 const savingSongs = new Map();
 
@@ -739,6 +733,121 @@ function saveAudio(name, blob) {
 
 
 /* =========================================
+   曲のキャッシュ状態
+========================================= */
+
+const cacheStatus = new Map();
+
+
+function setCacheStatus(name, status) {
+
+    cacheStatus.set(name, status);
+
+    updateSongCacheStatus(name);
+
+    if (
+        currentIndex !== -1 &&
+        songs[currentIndex] &&
+        songs[currentIndex].name === name
+    ) {
+
+        updateNowPlayingStatus(
+            songs[currentIndex],
+            status
+        );
+    }
+}
+
+
+function getCacheStatusText(status) {
+
+    switch (status) {
+
+        case "saved":
+            return "✓ オフライン";
+
+        case "saving":
+            return "↓ 保存中...";
+
+        case "error":
+            return "保存失敗";
+
+        default:
+            return "";
+    }
+}
+
+
+function updateSongCacheStatus(name) {
+
+    const elements =
+        document.querySelectorAll(
+            `.song[data-name="${cssEscape(name)}"]`
+        );
+
+    elements.forEach(element => {
+
+        const statusElement =
+            element.querySelector(
+                ".cache-status"
+            );
+
+        if (!statusElement) {
+            return;
+        }
+
+        const status =
+            cacheStatus.get(name);
+
+        statusElement.textContent =
+            getCacheStatusText(status);
+
+        statusElement.className =
+            "cache-status " +
+            (status || "");
+    });
+}
+
+
+function updateNowPlayingStatus(song, status) {
+
+    const text =
+        getCacheStatusText(status);
+
+    if (text) {
+
+        nowSub.textContent =
+            text;
+
+    } else {
+
+        nowSub.textContent =
+            "My Audio Library";
+    }
+}
+
+
+/* =========================================
+   CSS.escape互換
+========================================= */
+
+function cssEscape(text) {
+
+    if (
+        window.CSS &&
+        typeof window.CSS.escape === "function"
+    ) {
+
+        return window.CSS.escape(text);
+    }
+
+    return String(text)
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"');
+}
+
+
+/* =========================================
    状態
 ========================================= */
 
@@ -826,6 +935,12 @@ async function loadSongs() {
         status.textContent =
             `${songs.length}曲`;
 
+        /* =====================================
+           起動時にキャッシュ状態を確認
+        ===================================== */
+
+        checkAllCacheStatus();
+
     } catch (error) {
 
         console.error(
@@ -840,75 +955,41 @@ async function loadSongs() {
 
 
 /* =========================================
-   キャッシュ状態取得
+   全曲のキャッシュ状態を確認
 ========================================= */
 
-async function getCacheStatus(song) {
+async function checkAllCacheStatus() {
 
-    try {
-
-        const blob =
-            await getCachedAudio(song.name);
-
-        return !!blob;
-
-    } catch (error) {
-
-        console.warn(
-            "キャッシュ状態確認失敗:",
-            error
-        );
-
-        return false;
-    }
-}
-
-
-/* =========================================
-   曲の状態表示
-========================================= */
-
-async function updateSongStatus(song) {
-
-    const statusElement =
-        document.querySelector(
-            `[data-song-name="${CSS.escape(song.name)}"]`
-        );
-
-    if (!statusElement) {
+    if (!db) {
         return;
     }
 
-    const cached =
-        await getCacheStatus(song);
+    for (const song of songs) {
 
-    if (cached) {
+        try {
 
-        statusElement.textContent =
-            "✓ オフライン";
+            const blob =
+                await getCachedAudio(
+                    song.name
+                );
 
-        statusElement.className =
-            "song-status cached";
+            if (blob) {
 
-        return;
+                setCacheStatus(
+                    song.name,
+                    "saved"
+                );
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "キャッシュ確認失敗:",
+                song.title,
+                error
+            );
+        }
     }
-
-    if (savingSongs.has(song.id)) {
-
-        statusElement.textContent =
-            "↓ 保存中...";
-
-        statusElement.className =
-            "song-status saving";
-
-        return;
-    }
-
-    statusElement.textContent =
-        "オンライン";
-
-    statusElement.className =
-        "song-status";
 }
 
 
@@ -962,8 +1043,14 @@ function renderSongs() {
         const element =
             document.createElement("div");
 
-        element.className =
-            "song";
+        element.className = "song";
+
+        element.dataset.name =
+            song.name;
+
+        const cacheState =
+            cacheStatus.get(song.name) ||
+            "";
 
         element.innerHTML = `
             <div class="song-number">
@@ -976,15 +1063,18 @@ function renderSongs() {
                     ${escapeHtml(song.title)}
                 </div>
 
-                <div class="song-size">
-                    ${formatSize(song.size)}
-                </div>
+                <div class="song-meta">
 
-                <div
-                    class="song-status"
-                    data-song-name="${escapeAttribute(song.name)}"
-                >
-                    確認中...
+                    <span>
+                        ${formatSize(song.size)}
+                    </span>
+
+                    <span
+                        class="cache-status ${cacheState}"
+                    >
+                        ${getCacheStatusText(cacheState)}
+                    </span>
+
                 </div>
 
             </div>
@@ -1026,13 +1116,12 @@ function renderSongs() {
         element.addEventListener(
             "click",
             () => {
+
                 playSong(realIndex);
             }
         );
 
         container.appendChild(element);
-
-        updateSongStatus(song);
     });
 }
 
@@ -1175,9 +1264,14 @@ function getAudioFromGAS(videoId) {
                             );
 
                         resolve({
-                            blob: blob,
-                            name: data.name,
-                            label: data.label
+                            blob:
+                                blob,
+
+                            name:
+                                data.name,
+
+                            label:
+                                data.label
                         });
 
                     } catch (error) {
@@ -1220,44 +1314,52 @@ function getAudioFromGAS(videoId) {
    バックグラウンド保存
 ========================================= */
 
-function saveSongInBackground(song) {
+async function saveSongInBackground(song) {
 
-    /*
-     * すでに保存済みなら何もしない
-     */
+    if (!db) {
 
-    if (savingSongs.has(song.id)) {
+        console.warn(
+            "IndexedDBがないため保存できません:",
+            song.title
+        );
+
+        return;
+    }
+
+
+    /* =====================================
+       すでに保存中なら何もしない
+    ===================================== */
+
+    if (
+        savingSongs.has(song.name)
+    ) {
+
+        console.log(
+            "すでに保存中:",
+            song.title
+        );
 
         return savingSongs.get(
-            song.id
+            song.name
         );
     }
 
 
-    const promise =
+    const savePromise =
         (async () => {
 
+            setCacheStatus(
+                song.name,
+                "saving"
+            );
+
+            console.log(
+                "バックグラウンド保存開始:",
+                song.title
+            );
+
             try {
-
-                /*
-                 * 保存開始
-                 */
-
-                console.log(
-                    "バックグラウンド保存開始:",
-                    song.title
-                );
-
-                setSongStatus(
-                    song,
-                    "↓ 保存中...",
-                    "saving"
-                );
-
-
-                /*
-                 * GASから取得
-                 */
 
                 const result =
                     await getAudioFromGAS(
@@ -1265,37 +1367,26 @@ function saveSongInBackground(song) {
                     );
 
                 console.log(
-                    "GASから取得完了:",
-                    song.title
+                    "GASから音声取得完了:",
+                    result.name
                 );
 
-
-                /*
-                 * IndexedDBへ保存
-                 */
 
                 await saveAudio(
                     song.name,
                     result.blob
                 );
 
+
+                setCacheStatus(
+                    song.name,
+                    "saved"
+                );
+
                 console.log(
-                    "IndexedDBへバックグラウンド保存完了:",
+                    "IndexedDBへ保存しました:",
                     song.title
                 );
-
-
-                /*
-                 * UI更新
-                 */
-
-                setSongStatus(
-                    song,
-                    "✓ オフライン",
-                    "cached"
-                );
-
-                return true;
 
             } catch (error) {
 
@@ -1305,62 +1396,26 @@ function saveSongInBackground(song) {
                     error
                 );
 
-                setSongStatus(
-                    song,
-                    "オンライン",
+                setCacheStatus(
+                    song.name,
                     "error"
                 );
-
-                return false;
 
             } finally {
 
                 savingSongs.delete(
-                    song.id
+                    song.name
                 );
             }
 
         })();
 
     savingSongs.set(
-        song.id,
-        promise
+        song.name,
+        savePromise
     );
 
-    return promise;
-}
-
-
-/* =========================================
-   曲の状態を直接変更
-========================================= */
-
-function setSongStatus(
-    song,
-    text,
-    className = ""
-) {
-
-    const elements =
-        document.querySelectorAll(
-            ".song-status"
-        );
-
-    elements.forEach(element => {
-
-        if (
-            element.dataset.songName ===
-            song.name
-        ) {
-
-            element.textContent =
-                text;
-
-            element.className =
-                "song-status " +
-                className;
-        }
-    });
+    return savePromise;
 }
 
 
@@ -1374,17 +1429,14 @@ async function playSong(index) {
         return;
     }
 
-    currentIndex =
-        index;
+    currentIndex = index;
 
     const song =
         songs[index];
 
+
     nowTitle.textContent =
         song.title;
-
-    nowSub.textContent =
-        "読み込み中...";
 
     playButton.textContent =
         "▶";
@@ -1400,9 +1452,9 @@ async function playSong(index) {
             currentObjectURL
         );
 
-        currentObjectURL =
-            null;
+        currentObjectURL = null;
     }
+
 
     audio.pause();
 
@@ -1411,8 +1463,7 @@ async function playSong(index) {
        ① IndexedDB確認
     ===================================== */
 
-    let cachedBlob =
-        null;
+    let cachedBlob = null;
 
     try {
 
@@ -1441,14 +1492,10 @@ async function playSong(index) {
             song.title
         );
 
-        setSongStatus(
-            song,
-            "✓ オフライン",
-            "cached"
+        setCacheStatus(
+            song.name,
+            "saved"
         );
-
-        nowSub.textContent =
-            "✓ オフライン再生";
 
         currentObjectURL =
             URL.createObjectURL(
@@ -1486,168 +1533,54 @@ async function playSong(index) {
         song.title
     );
 
+
+    /*
+       ここが今回の重要部分。
+
+       保存完了を待たない。
+       まずGitHub Releaseを直接audioへ設定する。
+    */
+
+
+    setCacheStatus(
+        song.name,
+        "saving"
+    );
+
     nowSub.textContent =
-        "オンライン再生・バックグラウンド保存";
+        "再生中・バックグラウンド保存中";
 
 
     /* =====================================
-       ④ まず即座にGitHub Releaseから再生
+       ④ すぐに通常再生
     ===================================== */
-
-    console.log(
-        "通常再生を即座に開始:",
-        song.title
-    );
 
     audio.src =
         song.url;
-
-    let directPlaybackStarted =
-        false;
 
     try {
 
         await audio.play();
 
-        directPlaybackStarted =
-            true;
+    } catch (playError) {
 
-    } catch (error) {
-
-        console.warn(
-            "GitHub Releaseからの直接再生に失敗:",
-            error
+        console.error(
+            "通常再生に失敗:",
+            playError
         );
+
+        playButton.textContent =
+            "▶";
     }
 
 
     /* =====================================
-       ⑤ 再生と同時に裏で保存
+       ⑤ 裏でIndexedDB保存
+       再生を待たせない
     ===================================== */
 
-    /*
-     * awaitしない。
-     *
-     * ここが今回の重要ポイント。
-     *
-     * 保存が終わるまで
-     * 再生を待たせない。
-     */
+    saveSongInBackground(song);
 
-    saveSongInBackground(
-        song
-    ).then(
-        success => {
-
-            if (success) {
-
-                console.log(
-                    "オフライン再生可能になりました:",
-                    song.title
-                );
-
-                /*
-                 * 現在再生中なら
-                 * UIだけ更新する。
-                 *
-                 * 再生元は途中で変更しない。
-                 */
-
-                if (
-                    currentIndex === index
-                ) {
-
-                    nowSub.textContent =
-                        "✓ 再生中・オフライン保存済み";
-                }
-            }
-
-        }
-    );
-
-
-    /* =====================================
-       ⑥ 直接再生できなかった場合
-    ===================================== */
-
-    if (!directPlaybackStarted) {
-
-        console.log(
-            "直接再生できないためGAS取得結果を待ちます:",
-            song.title
-        );
-
-        try {
-
-            /*
-             * すでにバックグラウンド保存中なら、
-             * そのPromiseを待つ。
-             */
-
-            const savePromise =
-                savingSongs.get(
-                    song.id
-                );
-
-            if (savePromise) {
-
-                await savePromise;
-            }
-
-            /*
-             * IndexedDBから取得
-             */
-
-            const fallbackBlob =
-                await getCachedAudio(
-                    song.name
-                );
-
-            if (!fallbackBlob) {
-
-                throw new Error(
-                    "GASから音声を取得できませんでした。"
-                );
-            }
-
-            /*
-             * 曲がまだ同じなら再生
-             */
-
-            if (
-                currentIndex !== index
-            ) {
-
-                return;
-            }
-
-            currentObjectURL =
-                URL.createObjectURL(
-                    fallbackBlob
-                );
-
-            audio.src =
-                currentObjectURL;
-
-            nowSub.textContent =
-                "✓ オフライン再生";
-
-            await audio.play();
-
-        } catch (error) {
-
-            console.error(
-                "GAS経由の再生にも失敗:",
-                error
-            );
-
-            nowSub.textContent =
-                "再生できませんでした";
-
-            playButton.textContent =
-                "▶";
-        }
-    }
 }
 
 
@@ -1752,7 +1685,9 @@ document
             const index =
                 currentIndex >=
                 songs.length - 1
+
                     ? 0
+
                     : currentIndex + 1;
 
             playSong(index);
@@ -1775,7 +1710,9 @@ audio.addEventListener(
         const next =
             currentIndex >=
             songs.length - 1
+
                 ? 0
+
                 : currentIndex + 1;
 
         playSong(next);
@@ -1796,8 +1733,7 @@ audio.addEventListener(
                 audio.duration
             );
 
-        progress.value =
-            0;
+        progress.value = 0;
     }
 );
 
@@ -1854,8 +1790,7 @@ progress.addEventListener(
 
         audio.currentTime =
             (
-                progress.value /
-                100
+                progress.value / 100
             ) *
             audio.duration;
     }
@@ -1898,9 +1833,7 @@ document
 
 function formatTime(seconds) {
 
-    if (
-        !Number.isFinite(seconds)
-    ) {
+    if (!Number.isFinite(seconds)) {
 
         return "0:00";
     }
@@ -1927,9 +1860,7 @@ function formatTime(seconds) {
 
 function formatSize(bytes) {
 
-    if (
-        !Number.isFinite(bytes)
-    ) {
+    if (!Number.isFinite(bytes)) {
 
         return "不明";
     }
