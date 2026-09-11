@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="/workspaces/yt"
+DOWNLOAD_DIR="$REPO_DIR/downloads"
+EDGE_PROFILE="/tmp/edge-codespace"
+
+mkdir -p "$DOWNLOAD_DIR"
+
+echo "================================"
+echo "     YouTube Audio Downloader"
+echo "================================"
+echo
+
+read -rp "YouTube URL: " URL
+
+if [[ -z "$URL" ]]; then
+    echo "URLが入力されていません。"
+    exit 1
+fi
+
+if ! command -v yt-dlp >/dev/null 2>&1; then
+    echo "エラー: yt-dlp が見つかりません。"
+    exit 1
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+    echo "エラー: Node.js が見つかりません。"
+    exit 1
+fi
+
+if ! command -v ffmpeg >/dev/null 2>&1; then
+    echo "エラー: ffmpeg が見つかりません。"
+    exit 1
+fi
+
+if ! command -v ffprobe >/dev/null 2>&1; then
+    echo "エラー: ffprobe が見つかりません。"
+    exit 1
+fi
+
+if [[ ! -d "$EDGE_PROFILE" ]]; then
+    echo "エラー: Edgeプロファイルが見つかりません。"
+    echo
+    echo "Edgeのプロファイル:"
+    echo "$EDGE_PROFILE"
+    exit 1
+fi
+
+echo
+echo "ダウンロード開始..."
+echo "形式: 音声のみ"
+echo "コーデック: Opus"
+echo "ビットレート: 96 kbps"
+echo "保存先: $DOWNLOAD_DIR"
+echo
+
+yt-dlp \
+    --js-runtimes node \
+    --cookies-from-browser "edge:$EDGE_PROFILE" \
+    --no-playlist \
+    -f "ba[acodec^=opus]/ba" \
+    -x \
+    --audio-format opus \
+    --audio-quality 96K \
+    -P "$DOWNLOAD_DIR" \
+    -o '%(title)s [%(id)s].%(ext)s' \
+    "$URL"
+
+echo
+echo "================================"
+echo "      ダウンロード完了"
+echo "================================"
+echo
+echo "保存先:"
+echo "$DOWNLOAD_DIR"
