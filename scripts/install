@@ -25,30 +25,12 @@ if [[ -z "$URL" ]]; then
 fi
 
 # 必要なコマンドを確認
-if ! command -v yt-dlp >/dev/null 2>&1; then
-    echo "エラー: yt-dlp が見つかりません。"
-    exit 1
-fi
-
-if ! command -v node >/dev/null 2>&1; then
-    echo "エラー: Node.js が見つかりません。"
-    exit 1
-fi
-
-if ! command -v ffmpeg >/dev/null 2>&1; then
-    echo "エラー: ffmpeg が見つかりません。"
-    exit 1
-fi
-
-if ! command -v ffprobe >/dev/null 2>&1; then
-    echo "エラー: ffprobe が見つかりません。"
-    exit 1
-fi
-
-if ! command -v gh >/dev/null 2>&1; then
-    echo "エラー: GitHub CLI (gh) が見つかりません。"
-    exit 1
-fi
+for CMD in yt-dlp node ffmpeg ffprobe gh; do
+    if ! command -v "$CMD" >/dev/null 2>&1; then
+        echo "エラー: $CMD が見つかりません。"
+        exit 1
+    fi
+done
 
 if [[ ! -d "$EDGE_PROFILE" ]]; then
     echo "エラー: Edgeプロファイルが見つかりません。"
@@ -68,53 +50,9 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 echo
-echo "ダウンロード開始..."
-echo "形式: 音声のみ"
-echo "コーデック: Opus"
-echo "ビットレート: 96 kbps"
-echo "保存先: $DOWNLOAD_DIR"
-echo
+echo "動画情報を取得しています..."
 
-yt-dlp \
-    --js-runtimes node \
-    --cookies-from-browser "edge:$EDGE_PROFILE" \
-    --no-playlist \
-    -f "ba[acodec^=opus]/ba" \
-    -x \
-    --audio-format opus \
-    --audio-quality 96K \
-    -P "$DOWNLOAD_DIR" \
-    -o '%(title)s [%(id)s].%(ext)s' \
-    "$URL"
-
-echo
-echo "================================"
-echo "      ダウンロード完了"
-echo "================================"
-echo
-
-# 最新のopusファイルを取得
-OPUS_FILE=$(
-    find "$DOWNLOAD_DIR" \
-        -maxdepth 1 \
-        -type f \
-        -name '*.opus' \
-        -printf '%T@ %p\n' |
-    sort -nr |
-    head -n 1 |
-    cut -d' ' -f2-
-)
-
-if [[ -z "$OPUS_FILE" || ! -f "$OPUS_FILE" ]]; then
-    echo "エラー: .opusファイルが見つかりません。"
-    exit 1
-fi
-
-echo "アップロード対象:"
-echo "$OPUS_FILE"
-echo
-
-# YouTube動画IDを取得
+# YouTube動画ID
 VIDEO_ID=$(
     yt-dlp \
         --js-runtimes node \
@@ -130,6 +68,79 @@ if [[ -z "$VIDEO_ID" ]]; then
     exit 1
 fi
 
+# YouTubeタイトル
+VIDEO_TITLE=$(
+    yt-dlp \
+        --js-runtimes node \
+        --cookies-from-browser "edge:$EDGE_PROFILE" \
+        --print title \
+        --skip-download \
+        --no-playlist \
+        "$URL"
+)
+
+if [[ -z "$VIDEO_TITLE" ]]; then
+    echo "エラー: 動画タイトルを取得できませんでした。"
+    exit 1
+fi
+
+echo
+echo "タイトル:"
+echo "$VIDEO_TITLE"
+echo
+echo "動画ID:"
+echo "$VIDEO_ID"
+echo
+
+echo "================================"
+echo "        ダウンロード開始"
+echo "================================"
+echo
+echo "形式: 音声のみ"
+echo "コーデック: Opus"
+echo "ビットレート: 約80 kbps"
+echo "保存先: $DOWNLOAD_DIR"
+echo
+
+yt-dlp \
+    --js-runtimes node \
+    --cookies-from-browser "edge:$EDGE_PROFILE" \
+    --no-playlist \
+    -f "ba[acodec^=opus]/ba" \
+    -x \
+    --audio-format opus \
+    --audio-quality 80K \
+    -P "$DOWNLOAD_DIR" \
+    -o '%(title)s [%(id)s].%(ext)s' \
+    "$URL"
+
+echo
+echo "================================"
+echo "      ダウンロード完了"
+echo "================================"
+echo
+
+# 今回生成されたopusファイルを取得
+OPUS_FILE=$(
+    find "$DOWNLOAD_DIR" \
+        -maxdepth 1 \
+        -type f \
+        -name "*.opus" \
+        -printf '%T@ %p\n' |
+    sort -nr |
+    head -n 1 |
+    cut -d' ' -f2-
+)
+
+if [[ -z "$OPUS_FILE" || ! -f "$OPUS_FILE" ]]; then
+    echo "エラー: .opusファイルが見つかりません。"
+    exit 1
+fi
+
+echo "ローカルファイル:"
+echo "$OPUS_FILE"
+echo
+
 # GitHub Releaseが存在しなければ作成
 if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
     echo "GitHub Releaseを作成しています..."
@@ -140,28 +151,51 @@ if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
         --latest=false
 fi
 
-# ghのglob対策
-UPLOAD_FILE="$DOWNLOAD_DIR/.upload-${VIDEO_ID}.opus"
+# ==========================================
+# GitHub Release用ファイル名を作成
+# ==========================================
 
+# GitHub上で見やすい名前にする
+# [] は gh のglobとして解釈される可能性があるため () に変更
+SAFE_TITLE=$(printf '%s' "$VIDEO_TITLE" | sed \
+    -e 's/\[/(/g' \
+    -e 's/\]/)/g' \
+    -e 's/\//_/g' \
+    -e 's/\\/／/g')
+
+UPLOAD_NAME="${SAFE_TITLE} (${VIDEO_ID}).opus"
+UPLOAD_FILE="$DOWNLOAD_DIR/$UPLOAD_NAME"
+
+# 同名ファイルを作成
 cp "$OPUS_FILE" "$UPLOAD_FILE"
 
 echo
-echo "GitHub Releasesへアップロードしています..."
+echo "================================"
+echo "    GitHub Releasesへアップロード"
+echo "================================"
 echo
-echo "アップロード名: ${VIDEO_ID}.opus"
+echo "アップロード名:"
+echo "$UPLOAD_NAME"
+echo
 
 gh release upload \
     "$RELEASE_TAG" \
     "$UPLOAD_FILE" \
     --clobber
 
-# 一時ファイル削除
+# 一時アップロードファイル削除
 rm -f "$UPLOAD_FILE"
 
 echo
 echo "================================"
 echo "       アップロード完了"
 echo "================================"
+echo
+echo "タイトル:"
+echo "$VIDEO_TITLE"
+echo
+echo "動画ID:"
+echo "$VIDEO_ID"
 echo
 echo "ローカルファイル:"
 echo "$OPUS_FILE"
