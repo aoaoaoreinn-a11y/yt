@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -12,8 +11,7 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -34,6 +32,10 @@ body {
     overflow-x: hidden;
 }
 
+/* =========================
+   ヘッダー
+========================= */
+
 header {
     padding: 28px 32px 20px;
     background: #121212;
@@ -50,12 +52,20 @@ header p {
     font-size: 13px;
 }
 
+/* =========================
+   メイン
+========================= */
+
 main {
     width: 100%;
     max-width: 1000px;
     margin: auto;
     padding: 0 24px 30px;
 }
+
+/* =========================
+   検索
+========================= */
 
 .search {
     width: 100%;
@@ -73,19 +83,27 @@ main {
     outline: none;
 }
 
+.search::placeholder {
+    color: #888;
+}
+
 .search:focus {
     background: #2c2c2c;
 }
 
-.search::placeholder {
-    color: #888;
-}
+/* =========================
+   ステータス
+========================= */
 
 .status {
     margin: 20px 4px 12px;
     color: #999;
     font-size: 13px;
 }
+
+/* =========================
+   曲一覧
+========================= */
 
 .song {
     display: flex;
@@ -170,11 +188,19 @@ main {
     color: #fff;
 }
 
+/* =========================
+   空表示
+========================= */
+
 .empty {
     padding: 60px 20px;
     text-align: center;
     color: #777;
 }
+
+/* =========================
+   プレイヤー
+========================= */
 
 .player {
     position: fixed;
@@ -202,6 +228,8 @@ main {
     padding: 10px 24px;
 }
 
+/* 曲情報 */
+
 .now-playing {
     min-width: 0;
 }
@@ -220,6 +248,8 @@ main {
     color: #888;
     font-size: 11px;
 }
+
+/* 中央操作 */
 
 .controls {
     width: 100%;
@@ -287,6 +317,8 @@ main {
     cursor: pointer;
 }
 
+/* 音量 */
+
 .volume {
     display: flex;
     justify-content: flex-end;
@@ -299,9 +331,15 @@ main {
     accent-color: #fff;
 }
 
+/* 実際のaudioは非表示 */
+
 audio {
     display: none;
 }
+
+/* =========================
+   スマホ
+========================= */
 
 @media (max-width: 700px) {
 
@@ -341,6 +379,8 @@ audio {
     .download {
         display: none;
     }
+
+    /* スマホではプレイヤーを縦型に */
 
     .player {
         height: 135px;
@@ -405,6 +445,10 @@ audio {
     <div id="songs"></div>
 
 </main>
+
+<!-- =========================
+     プレイヤー
+========================= -->
 
 <div class="player">
 
@@ -494,168 +538,8 @@ const RELEASE_TAG = "audio";
 const API_URL =
     `https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/${RELEASE_TAG}`;
 
-
-/* =========================================
-   IndexedDB
-========================================= */
-
-const DB_NAME = "MyAudioLibrary";
-const DB_VERSION = 1;
-const STORE_NAME = "audio";
-
-let db = null;
-
-
-/* =========================================
-   IndexedDBを開く
-========================================= */
-
-function openDatabase() {
-
-    return new Promise((resolve, reject) => {
-
-        if (!("indexedDB" in window)) {
-            reject(new Error("IndexedDBが利用できません。"));
-            return;
-        }
-
-        const request =
-            indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onupgradeneeded = event => {
-
-            const database =
-                event.target.result;
-
-            if (!database.objectStoreNames.contains(STORE_NAME)) {
-
-                database.createObjectStore(
-                    STORE_NAME,
-                    { keyPath: "name" }
-                );
-            }
-        };
-
-        request.onsuccess = event => {
-
-            db = event.target.result;
-
-            db.onversionchange = () => {
-                db.close();
-            };
-
-            resolve(db);
-        };
-
-        request.onerror = () => {
-            reject(
-                request.error ||
-                new Error("IndexedDBを開けませんでした。")
-            );
-        };
-    });
-}
-
-
-/* =========================================
-   IndexedDBから取得
-========================================= */
-
-function getCachedAudio(name) {
-
-    return new Promise((resolve, reject) => {
-
-        if (!db) {
-            resolve(null);
-            return;
-        }
-
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readonly"
-            );
-
-        const store =
-            transaction.objectStore(STORE_NAME);
-
-        const request =
-            store.get(name);
-
-        request.onsuccess = () => {
-
-            const result =
-                request.result;
-
-            if (!result || !(result.data instanceof Blob)) {
-                resolve(null);
-                return;
-            }
-
-            resolve(result.data);
-        };
-
-        request.onerror = () => {
-            reject(
-                request.error ||
-                new Error("IndexedDB読み込みエラー")
-            );
-        };
-    });
-}
-
-
-/* =========================================
-   IndexedDBへ保存
-========================================= */
-
-function saveAudio(name, blob) {
-
-    return new Promise((resolve, reject) => {
-
-        if (!db) {
-            reject(new Error("IndexedDBが開かれていません。"));
-            return;
-        }
-
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readwrite"
-            );
-
-        const store =
-            transaction.objectStore(STORE_NAME);
-
-        const request =
-            store.put({
-                name: name,
-                data: blob,
-                savedAt: Date.now()
-            });
-
-        request.onsuccess = () => {
-            resolve();
-        };
-
-        request.onerror = () => {
-            reject(
-                request.error ||
-                new Error("IndexedDB保存エラー")
-            );
-        };
-    });
-}
-
-
-/* =========================================
-   状態
-========================================= */
-
 let songs = [];
 let currentIndex = -1;
-
-let currentObjectURL = null;
 
 const audio =
     document.getElementById("audio");
@@ -676,9 +560,9 @@ const nowTitle =
     document.getElementById("nowTitle");
 
 
-/* =========================================
-   GitHubから曲一覧取得
-========================================= */
+/* =========================
+   GitHubから取得
+========================= */
 
 async function loadSongs() {
 
@@ -700,33 +584,24 @@ async function loadSongs() {
             await response.json();
 
         songs =
-            Array.isArray(release.assets)
-                ? release.assets
-                    .filter(asset =>
-                        typeof asset.name === "string" &&
-                        asset.name
-                            .toLowerCase()
-                            .endsWith(".opus")
-                    )
-                    .map(asset => ({
-                        name: asset.name,
-                        title: asset.label || asset.name,
-                        url: asset.browser_download_url,
-                        size: asset.size
-                    }))
-                : [];
+            release.assets
+                .filter(asset =>
+                    asset.name
+                        .toLowerCase()
+                        .endsWith(".opus")
+                )
+                .map(asset => ({
+                    name: asset.name,
+                    title: asset.label || asset.name,
+                    url: asset.browser_download_url,
+                    size: asset.size
+                }));
 
         renderSongs();
 
-        status.textContent =
-            `${songs.length}曲`;
-
     } catch (error) {
 
-        console.error(
-            "曲一覧の取得に失敗しました:",
-            error
-        );
+        console.error(error);
 
         status.textContent =
             "音声ファイルを取得できませんでした。";
@@ -734,9 +609,9 @@ async function loadSongs() {
 }
 
 
-/* =========================================
+/* =========================
    一覧表示
-========================================= */
+========================= */
 
 function renderSongs() {
 
@@ -750,7 +625,6 @@ function renderSongs() {
         document
             .getElementById("search")
             .value
-            .trim()
             .toLowerCase();
 
     container.innerHTML = "";
@@ -814,22 +688,11 @@ function renderSongs() {
             <button
                 class="play-button"
                 title="再生"
-                type="button"
+                onclick="playSong(${realIndex}); event.stopPropagation();"
             >
                 ▶
             </button>
         `;
-
-        const button =
-            element.querySelector(".play-button");
-
-        button.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-                playSong(realIndex);
-            }
-        );
 
         element.addEventListener(
             "click",
@@ -841,244 +704,46 @@ function renderSongs() {
 }
 
 
-/* =========================================
+/* =========================
    曲を再生
-========================================= */
+========================= */
 
-async function playSong(index) {
+function playSong(index) {
 
-    if (!songs[index]) {
-        return;
-    }
+    if (!songs[index]) return;
 
     currentIndex = index;
 
     const song =
         songs[index];
 
+    audio.src = song.url;
+
     nowTitle.textContent =
         song.title;
 
-    playButton.textContent =
-        "▶";
-
-    /*
-       前のBlob URLを解放
-    */
-
-    if (currentObjectURL) {
-
-        URL.revokeObjectURL(
-            currentObjectURL
-        );
-
-        currentObjectURL = null;
-    }
-
-    /*
-       一度停止
-    */
-
-    audio.pause();
-
-    /*
-       =====================================
-       ① IndexedDBを確認
-       =====================================
-    */
-
-    let cachedBlob = null;
-
-    try {
-
-        cachedBlob =
-            await getCachedAudio(song.name);
-
-    } catch (error) {
-
-        console.warn(
-            "IndexedDB読み込み失敗:",
-            error
-        );
-    }
-
-
-    /*
-       =====================================
-       ② IndexedDBに存在
-       =====================================
-    */
-
-    if (cachedBlob) {
-
-        console.log(
-            "IndexedDBから再生:",
-            song.title
-        );
-
-        currentObjectURL =
-            URL.createObjectURL(
-                cachedBlob
-            );
-
-        audio.src =
-            currentObjectURL;
-
-        try {
-
-            await audio.play();
-
-        } catch (error) {
-
-            console.error(
-                "IndexedDB音声の再生に失敗:",
-                error
-            );
-
-            playButton.textContent =
-                "▶";
-        }
-
-        return;
-    }
-
-
-    /*
-       =====================================
-       ③ IndexedDBに存在しない
-       =====================================
-    */
-
-    console.log(
-        "IndexedDBに存在しません:",
-        song.title
-    );
-
-
-    /*
-       =====================================
-       ④ ネットから取得して保存
-       
-       ただしGitHub ReleasesはCORSの
-       制限によりfetchできない場合がある。
-       その場合は通常のaudio再生へ移行。
-       =====================================
-    */
-
-    try {
-
-        const response =
-            await fetch(
-                song.url,
-                {
-                    mode: "cors"
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
-
-        const blob =
-            await response.blob();
-
-        /*
-           Blobとして正常に取得できたら保存
-        */
-
-        try {
-
-            await saveAudio(
-                song.name,
-                blob
-            );
-
-            console.log(
-                "IndexedDBへ保存:",
-                song.title
-            );
-
-        } catch (saveError) {
-
-            /*
-               保存失敗でも再生自体は続行
-            */
-
-            console.warn(
-                "IndexedDB保存失敗。再生は続行します:",
-                saveError
-            );
-        }
-
-        /*
-           取得したBlobを再生
-        */
-
-        currentObjectURL =
-            URL.createObjectURL(
-                blob
-            );
-
-        audio.src =
-            currentObjectURL;
-
-        await audio.play();
-
-    } catch (error) {
-
-        /*
-           =================================
-           CORSなどでfetchできない場合
-           =================================
-
-           ここではエラーを画面に出さず、
-           GitHubのURLをaudio要素へ直接渡す。
-           
-           これなら現在のGitHub Releases
-           構成でも通常再生できる。
-        */
-
-        console.warn(
-            "IndexedDB用の取得に失敗しました。通常再生へ移行します:",
-            error
-        );
-
-        audio.src =
-            song.url;
-
-        try {
-
-            await audio.play();
-
-        } catch (playError) {
-
-            console.error(
-                "音声を再生できませんでした:",
-                playError
-            );
-
-            playButton.textContent =
-                "▶";
-        }
-    }
+    audio.play()
+        .then(() => {
+            playButton.textContent = "Ⅱ";
+        })
+        .catch(() => {
+            playButton.textContent = "▶";
+        });
 }
 
 
-/* =========================================
+/* =========================
    再生 / 一時停止
-========================================= */
+========================= */
 
 playButton.addEventListener(
     "click",
-    async () => {
+    () => {
 
         if (currentIndex === -1) {
 
             if (songs.length) {
-                await playSong(0);
+                playSong(0);
             }
 
             return;
@@ -1086,25 +751,15 @@ playButton.addEventListener(
 
         if (audio.paused) {
 
-            try {
-
-                await audio.play();
-
-            } catch (error) {
-
-                console.error(
-                    "再生に失敗:",
-                    error
-                );
-            }
+            audio.play();
 
         } else {
 
             audio.pause();
+
         }
     }
 );
-
 
 audio.addEventListener(
     "play",
@@ -1112,7 +767,6 @@ audio.addEventListener(
         playButton.textContent = "Ⅱ";
     }
 );
-
 
 audio.addEventListener(
     "pause",
@@ -1122,9 +776,9 @@ audio.addEventListener(
 );
 
 
-/* =========================================
+/* =========================
    前の曲
-========================================= */
+========================= */
 
 document
     .getElementById("prev")
@@ -1132,9 +786,7 @@ document
         "click",
         () => {
 
-            if (!songs.length) {
-                return;
-            }
+            if (!songs.length) return;
 
             const index =
                 currentIndex <= 0
@@ -1146,9 +798,9 @@ document
     );
 
 
-/* =========================================
+/* =========================
    次の曲
-========================================= */
+========================= */
 
 document
     .getElementById("next")
@@ -1156,9 +808,7 @@ document
         "click",
         () => {
 
-            if (!songs.length) {
-                return;
-            }
+            if (!songs.length) return;
 
             const index =
                 currentIndex >= songs.length - 1
@@ -1170,17 +820,15 @@ document
     );
 
 
-/* =========================================
+/* =========================
    自動で次の曲
-========================================= */
+========================= */
 
 audio.addEventListener(
     "ended",
     () => {
 
-        if (!songs.length) {
-            return;
-        }
+        if (!songs.length) return;
 
         const next =
             currentIndex >= songs.length - 1
@@ -1192,9 +840,9 @@ audio.addEventListener(
 );
 
 
-/* =========================================
-   メタデータ
-========================================= */
+/* =========================
+   シークバー
+========================= */
 
 audio.addEventListener(
     "loadedmetadata",
@@ -1207,19 +855,11 @@ audio.addEventListener(
     }
 );
 
-
-/* =========================================
-   再生位置
-========================================= */
-
 audio.addEventListener(
     "timeupdate",
     () => {
 
-        if (!Number.isFinite(audio.duration) ||
-            audio.duration <= 0) {
-            return;
-        }
+        if (!audio.duration) return;
 
         progress.value =
             (audio.currentTime /
@@ -1230,19 +870,11 @@ audio.addEventListener(
     }
 );
 
-
-/* =========================================
-   シーク
-========================================= */
-
 progress.addEventListener(
     "input",
     () => {
 
-        if (!Number.isFinite(audio.duration) ||
-            audio.duration <= 0) {
-            return;
-        }
+        if (!audio.duration) return;
 
         audio.currentTime =
             (progress.value / 100) *
@@ -1251,9 +883,9 @@ progress.addEventListener(
 );
 
 
-/* =========================================
+/* =========================
    音量
-========================================= */
+========================= */
 
 document
     .getElementById("volume")
@@ -1262,14 +894,14 @@ document
         event => {
 
             audio.volume =
-                Number(event.target.value);
+                event.target.value;
         }
     );
 
 
-/* =========================================
+/* =========================
    検索
-========================================= */
+========================= */
 
 document
     .getElementById("search")
@@ -1279,9 +911,9 @@ document
     );
 
 
-/* =========================================
+/* =========================
    時間
-========================================= */
+========================= */
 
 function formatTime(seconds) {
 
@@ -1301,15 +933,11 @@ function formatTime(seconds) {
 }
 
 
-/* =========================================
+/* =========================
    ファイルサイズ
-========================================= */
+========================= */
 
 function formatSize(bytes) {
-
-    if (!Number.isFinite(bytes)) {
-        return "不明";
-    }
 
     if (bytes < 1024) {
         return `${bytes} B`;
@@ -1323,17 +951,16 @@ function formatSize(bytes) {
 }
 
 
-/* =========================================
+/* =========================
    HTMLエスケープ
-========================================= */
+========================= */
 
 function escapeHtml(text) {
 
     const div =
         document.createElement("div");
 
-    div.textContent =
-        String(text);
+    div.textContent = text;
 
     return div.innerHTML;
 }
@@ -1349,36 +976,11 @@ function escapeAttribute(text) {
 }
 
 
-/* =========================================
+/* =========================
    起動
-========================================= */
+========================= */
 
-(async function init() {
-
-    try {
-
-        await openDatabase();
-
-        console.log(
-            "IndexedDB initialized."
-        );
-
-    } catch (error) {
-
-        /*
-           IndexedDBが使えなくても
-           サイト自体は動かす。
-        */
-
-        console.warn(
-            "IndexedDBを利用できません。通常再生で動作します:",
-            error
-        );
-    }
-
-    await loadSongs();
-
-})();
+loadSongs();
 
 </script>
 
