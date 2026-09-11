@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+cd /workspaces/yt
+
+echo "================================"
+echo "       GitHub Push"
+echo "================================"
+echo
+
+echo "[1/3] 変更を確認..."
+git status
+
+echo
+echo "[2/3] ファイルを追加..."
+git add .
+
+echo
+echo "[3/3] コミット＆Push..."
+git commit -m "Update YouTube audio downloader"
+git push
+
+echo
+echo "================================"
+echo "        Push 完了"
+echo "================================"
