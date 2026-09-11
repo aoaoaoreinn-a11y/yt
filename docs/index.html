@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- favicon.icoへの不要な404を防止 -->
 <link rel="icon" href="data:,">
 
 <title>音声ファイル</title>
@@ -133,32 +132,10 @@ main {
     white-space: nowrap;
 }
 
-.song-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
+.song-size {
     margin-top: 3px;
-
     color: #777;
     font-size: 11px;
-}
-
-.cache-status {
-    color: #888;
-    white-space: nowrap;
-}
-
-.cache-status.saving {
-    color: #aaa;
-}
-
-.cache-status.saved {
-    color: #aaa;
-}
-
-.cache-status.error {
-    color: #777;
 }
 
 .play-button {
@@ -546,11 +523,11 @@ let db = null;
 
 
 /* =========================================
-   保存中の曲
-   同じ曲を複数回保存しないため
+   保存処理中の曲
+   同じ曲を何度もGASへ取りに行かない
 ========================================= */
 
-const savingSongs = new Map();
+const cacheJobs = new Map();
 
 
 /* =========================================
@@ -571,20 +548,14 @@ function openDatabase() {
         }
 
         const request =
-            indexedDB.open(
-                DB_NAME,
-                DB_VERSION
-            );
+            indexedDB.open(DB_NAME, DB_VERSION);
 
         request.onupgradeneeded = event => {
 
             const database =
                 event.target.result;
 
-            if (
-                !database.objectStoreNames
-                    .contains(STORE_NAME)
-            ) {
+            if (!database.objectStoreNames.contains(STORE_NAME)) {
 
                 database.createObjectStore(
                     STORE_NAME,
@@ -595,8 +566,7 @@ function openDatabase() {
 
         request.onsuccess = event => {
 
-            db =
-                event.target.result;
+            db = event.target.result;
 
             db.onversionchange = () => {
                 db.close();
@@ -609,9 +579,7 @@ function openDatabase() {
 
             reject(
                 request.error ||
-                new Error(
-                    "IndexedDBを開けませんでした。"
-                )
+                new Error("IndexedDBを開けませんでした。")
             );
         };
     });
@@ -627,9 +595,7 @@ function getCachedAudio(name) {
     return new Promise((resolve, reject) => {
 
         if (!db) {
-
             resolve(null);
-
             return;
         }
 
@@ -640,9 +606,7 @@ function getCachedAudio(name) {
             );
 
         const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
+            transaction.objectStore(STORE_NAME);
 
         const request =
             store.get(name);
@@ -658,7 +622,6 @@ function getCachedAudio(name) {
             ) {
 
                 resolve(null);
-
                 return;
             }
 
@@ -669,9 +632,7 @@ function getCachedAudio(name) {
 
             reject(
                 request.error ||
-                new Error(
-                    "IndexedDB読み込みエラー"
-                )
+                new Error("IndexedDB読み込みエラー")
             );
         };
     });
@@ -689,9 +650,7 @@ function saveAudio(name, blob) {
         if (!db) {
 
             reject(
-                new Error(
-                    "IndexedDBが開かれていません。"
-                )
+                new Error("IndexedDBが開かれていません。")
             );
 
             return;
@@ -704,9 +663,7 @@ function saveAudio(name, blob) {
             );
 
         const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
+            transaction.objectStore(STORE_NAME);
 
         const request =
             store.put({
@@ -723,127 +680,10 @@ function saveAudio(name, blob) {
 
             reject(
                 request.error ||
-                new Error(
-                    "IndexedDB保存エラー"
-                )
+                new Error("IndexedDB保存エラー")
             );
         };
     });
-}
-
-
-/* =========================================
-   曲のキャッシュ状態
-========================================= */
-
-const cacheStatus = new Map();
-
-
-function setCacheStatus(name, status) {
-
-    cacheStatus.set(name, status);
-
-    updateSongCacheStatus(name);
-
-    if (
-        currentIndex !== -1 &&
-        songs[currentIndex] &&
-        songs[currentIndex].name === name
-    ) {
-
-        updateNowPlayingStatus(
-            songs[currentIndex],
-            status
-        );
-    }
-}
-
-
-function getCacheStatusText(status) {
-
-    switch (status) {
-
-        case "saved":
-            return "✓ オフライン";
-
-        case "saving":
-            return "↓ 保存中...";
-
-        case "error":
-            return "保存失敗";
-
-        default:
-            return "";
-    }
-}
-
-
-function updateSongCacheStatus(name) {
-
-    const elements =
-        document.querySelectorAll(
-            `.song[data-name="${cssEscape(name)}"]`
-        );
-
-    elements.forEach(element => {
-
-        const statusElement =
-            element.querySelector(
-                ".cache-status"
-            );
-
-        if (!statusElement) {
-            return;
-        }
-
-        const status =
-            cacheStatus.get(name);
-
-        statusElement.textContent =
-            getCacheStatusText(status);
-
-        statusElement.className =
-            "cache-status " +
-            (status || "");
-    });
-}
-
-
-function updateNowPlayingStatus(song, status) {
-
-    const text =
-        getCacheStatusText(status);
-
-    if (text) {
-
-        nowSub.textContent =
-            text;
-
-    } else {
-
-        nowSub.textContent =
-            "My Audio Library";
-    }
-}
-
-
-/* =========================================
-   CSS.escape互換
-========================================= */
-
-function cssEscape(text) {
-
-    if (
-        window.CSS &&
-        typeof window.CSS.escape === "function"
-    ) {
-
-        return window.CSS.escape(text);
-    }
-
-    return String(text)
-        .replace(/\\/g, "\\\\")
-        .replace(/"/g, '\\"');
 }
 
 
@@ -913,19 +753,10 @@ async function loadSongs() {
                     )
                     .map(asset => ({
                         name: asset.name,
-                        title:
-                            asset.label ||
-                            asset.name,
-                        id:
-                            asset.name
-                                .replace(
-                                    /\.opus$/i,
-                                    ""
-                                ),
-                        url:
-                            asset.browser_download_url,
-                        size:
-                            asset.size
+                        title: asset.label || asset.name,
+                        id: asset.name.replace(/\.opus$/i, ""),
+                        url: asset.browser_download_url,
+                        size: asset.size
                     }))
 
                 : [];
@@ -934,12 +765,6 @@ async function loadSongs() {
 
         status.textContent =
             `${songs.length}曲`;
-
-        /* =====================================
-           起動時にキャッシュ状態を確認
-        ===================================== */
-
-        checkAllCacheStatus();
 
     } catch (error) {
 
@@ -950,45 +775,6 @@ async function loadSongs() {
 
         status.textContent =
             "音声ファイルを取得できませんでした。";
-    }
-}
-
-
-/* =========================================
-   全曲のキャッシュ状態を確認
-========================================= */
-
-async function checkAllCacheStatus() {
-
-    if (!db) {
-        return;
-    }
-
-    for (const song of songs) {
-
-        try {
-
-            const blob =
-                await getCachedAudio(
-                    song.name
-                );
-
-            if (blob) {
-
-                setCacheStatus(
-                    song.name,
-                    "saved"
-                );
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "キャッシュ確認失敗:",
-                song.title,
-                error
-            );
-        }
     }
 }
 
@@ -1045,38 +831,19 @@ function renderSongs() {
 
         element.className = "song";
 
-        element.dataset.name =
-            song.name;
-
-        const cacheState =
-            cacheStatus.get(song.name) ||
-            "";
-
         element.innerHTML = `
             <div class="song-number">
                 ${index + 1}
             </div>
 
             <div class="song-info">
-
                 <div class="song-title">
                     ${escapeHtml(song.title)}
                 </div>
 
-                <div class="song-meta">
-
-                    <span>
-                        ${formatSize(song.size)}
-                    </span>
-
-                    <span
-                        class="cache-status ${cacheState}"
-                    >
-                        ${getCacheStatusText(cacheState)}
-                    </span>
-
+                <div class="song-size">
+                    ${formatSize(song.size)}
                 </div>
-
             </div>
 
             <a
@@ -1099,9 +866,7 @@ function renderSongs() {
         `;
 
         const button =
-            element.querySelector(
-                ".play-button"
-            );
+            element.querySelector(".play-button");
 
         button.addEventListener(
             "click",
@@ -1115,10 +880,7 @@ function renderSongs() {
 
         element.addEventListener(
             "click",
-            () => {
-
-                playSong(realIndex);
-            }
+            () => playSong(realIndex)
         );
 
         container.appendChild(element);
@@ -1130,21 +892,15 @@ function renderSongs() {
    Base64 → Blob
 ========================================= */
 
-function base64ToBlob(
-    base64,
-    mimeType
-) {
+function base64ToBlob(base64, mimeType) {
 
     const binary =
         atob(base64);
 
     const bytes =
-        new Uint8Array(
-            binary.length
-        );
+        new Uint8Array(binary.length);
 
-    const chunkSize =
-        1024 * 1024;
+    const chunkSize = 1024 * 1024;
 
     for (
         let offset = 0;
@@ -1172,9 +928,7 @@ function base64ToBlob(
     return new Blob(
         [bytes],
         {
-            type:
-                mimeType ||
-                "audio/ogg"
+            type: mimeType || "audio/ogg"
         }
     );
 }
@@ -1186,127 +940,108 @@ function base64ToBlob(
 
 function getAudioFromGAS(videoId) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const callbackName =
-                "__gasAudio_" +
-                Date.now() +
-                "_" +
-                Math.random()
-                    .toString(36)
-                    .slice(2);
+        const callbackName =
+            "__gasAudio_" +
+            Date.now() +
+            "_" +
+            Math.random()
+                .toString(36)
+                .slice(2);
 
-            const script =
-                document.createElement(
-                    "script"
-                );
+        const script =
+            document.createElement("script");
 
-            let finished = false;
+        let finished = false;
 
-            const cleanup = () => {
+        const cleanup = () => {
 
-                if (finished) {
-                    return;
-                }
+            if (finished) {
+                return;
+            }
 
-                finished = true;
+            finished = true;
 
-                delete window[
-                    callbackName
-                ];
+            delete window[callbackName];
 
-                script.remove();
-            };
+            script.remove();
+        };
 
-            window[callbackName] =
-                data => {
+        window[callbackName] = data => {
 
-                    if (finished) {
-                        return;
-                    }
+            if (finished) {
+                return;
+            }
 
-                    cleanup();
+            cleanup();
 
-                    if (
-                        !data ||
-                        data.error
-                    ) {
-
-                        reject(
-                            new Error(
-                                data?.error ||
-                                "GASから音声データを取得できませんでした。"
-                            )
-                        );
-
-                        return;
-                    }
-
-                    if (!data.data) {
-
-                        reject(
-                            new Error(
-                                "GASから音声データが返されませんでした。"
-                            )
-                        );
-
-                        return;
-                    }
-
-                    try {
-
-                        const blob =
-                            base64ToBlob(
-                                data.data,
-                                data.mimeType ||
-                                "audio/ogg"
-                            );
-
-                        resolve({
-                            blob:
-                                blob,
-
-                            name:
-                                data.name,
-
-                            label:
-                                data.label
-                        });
-
-                    } catch (error) {
-
-                        reject(error);
-                    }
-                };
-
-            script.onerror = () => {
-
-                cleanup();
+            if (
+                !data ||
+                data.error
+            ) {
 
                 reject(
                     new Error(
-                        "GASへの接続に失敗しました。"
+                        data?.error ||
+                        "GASから音声データを取得できませんでした。"
                     )
                 );
-            };
 
-            script.src =
-                GAS_URL +
-                "?id=" +
-                encodeURIComponent(
-                    videoId
-                ) +
-                "&callback=" +
-                encodeURIComponent(
-                    callbackName
+                return;
+            }
+
+            if (!data.data) {
+
+                reject(
+                    new Error(
+                        "GASから音声データが返されませんでした。"
+                    )
                 );
 
-            document.head.appendChild(
-                script
+                return;
+            }
+
+            try {
+
+                const blob =
+                    base64ToBlob(
+                        data.data,
+                        data.mimeType || "audio/ogg"
+                    );
+
+                resolve({
+                    blob: blob,
+                    name: data.name,
+                    label: data.label
+                });
+
+            } catch (error) {
+
+                reject(error);
+            }
+        };
+
+        script.onerror = () => {
+
+            cleanup();
+
+            reject(
+                new Error(
+                    "GASへの接続に失敗しました。"
+                )
             );
-        }
-    );
+        };
+
+        script.src =
+            GAS_URL +
+            "?id=" +
+            encodeURIComponent(videoId) +
+            "&callback=" +
+            encodeURIComponent(callbackName);
+
+        document.head.appendChild(script);
+    });
 }
 
 
@@ -1314,57 +1049,44 @@ function getAudioFromGAS(videoId) {
    バックグラウンド保存
 ========================================= */
 
-async function saveSongInBackground(song) {
+function cacheAudioInBackground(song) {
 
-    if (!db) {
+    /*
+     * すでに保存処理中なら、
+     * 同じ処理をもう一度開始しない。
+     */
 
-        console.warn(
-            "IndexedDBがないため保存できません:",
-            song.title
-        );
-
-        return;
-    }
-
-
-    /* =====================================
-       すでに保存中なら何もしない
-    ===================================== */
-
-    if (
-        savingSongs.has(song.name)
-    ) {
+    if (cacheJobs.has(song.name)) {
 
         console.log(
-            "すでに保存中:",
+            "IndexedDB保存処理はすでに実行中:",
             song.title
         );
 
-        return savingSongs.get(
-            song.name
-        );
+        return cacheJobs.get(song.name);
     }
 
 
-    const savePromise =
+    const job =
         (async () => {
-
-            setCacheStatus(
-                song.name,
-                "saving"
-            );
-
-            console.log(
-                "バックグラウンド保存開始:",
-                song.title
-            );
 
             try {
 
+                console.log(
+                    "バックグラウンド保存開始:",
+                    song.title
+                );
+
+                nowSub.textContent =
+                    "再生中・保存しています…";
+
+
+                /* =============================
+                   GASから取得
+                ============================= */
+
                 const result =
-                    await getAudioFromGAS(
-                        song.id
-                    );
+                    await getAudioFromGAS(song.id);
 
                 console.log(
                     "GASから音声取得完了:",
@@ -1372,15 +1094,13 @@ async function saveSongInBackground(song) {
                 );
 
 
+                /* =============================
+                   IndexedDBへ保存
+                ============================= */
+
                 await saveAudio(
                     song.name,
                     result.blob
-                );
-
-
-                setCacheStatus(
-                    song.name,
-                    "saved"
                 );
 
                 console.log(
@@ -1388,34 +1108,62 @@ async function saveSongInBackground(song) {
                     song.title
                 );
 
+
+                /*
+                 * まだ同じ曲を再生している場合だけ
+                 * 表示を更新する。
+                 */
+
+                if (
+                    currentIndex !== -1 &&
+                    songs[currentIndex] === song
+                ) {
+
+                    nowSub.textContent =
+                        "IndexedDBに保存済み";
+                }
+
+                return true;
+
             } catch (error) {
 
                 console.warn(
-                    "バックグラウンド保存失敗:",
+                    "バックグラウンド保存に失敗:",
                     song.title,
                     error
                 );
 
-                setCacheStatus(
-                    song.name,
-                    "error"
-                );
+
+                /*
+                 * 保存に失敗しても、
+                 * 現在の再生には一切影響させない。
+                 */
+
+                if (
+                    currentIndex !== -1 &&
+                    songs[currentIndex] === song
+                ) {
+
+                    nowSub.textContent =
+                        "オンライン再生";
+                }
+
+                return false;
 
             } finally {
 
-                savingSongs.delete(
-                    song.name
-                );
+                cacheJobs.delete(song.name);
             }
 
         })();
 
-    savingSongs.set(
+
+    cacheJobs.set(
         song.name,
-        savePromise
+        job
     );
 
-    return savePromise;
+    return job;
 }
 
 
@@ -1434,9 +1182,11 @@ async function playSong(index) {
     const song =
         songs[index];
 
-
     nowTitle.textContent =
         song.title;
+
+    nowSub.textContent =
+        "確認中…";
 
     playButton.textContent =
         "▶";
@@ -1455,7 +1205,6 @@ async function playSong(index) {
         currentObjectURL = null;
     }
 
-
     audio.pause();
 
 
@@ -1468,9 +1217,7 @@ async function playSong(index) {
     try {
 
         cachedBlob =
-            await getCachedAudio(
-                song.name
-            );
+            await getCachedAudio(song.name);
 
     } catch (error) {
 
@@ -1492,10 +1239,8 @@ async function playSong(index) {
             song.title
         );
 
-        setCacheStatus(
-            song.name,
-            "saved"
-        );
+        nowSub.textContent =
+            "IndexedDBから再生";
 
         currentObjectURL =
             URL.createObjectURL(
@@ -1534,26 +1279,44 @@ async function playSong(index) {
     );
 
 
-    /*
-       ここが今回の重要部分。
+    /* =====================================
+       ④ ここが今回の重要部分
 
-       保存完了を待たない。
-       まずGitHub Releaseを直接audioへ設定する。
-    */
+       GASを待たない。
 
+       GitHub Releaseを直接再生しながら、
+       GAS取得 → IndexedDB保存を
+       バックグラウンドで実行する。
+    ===================================== */
 
-    setCacheStatus(
-        song.name,
-        "saving"
+    console.log(
+        "IndexedDB保存をバックグラウンドで開始:",
+        song.title
     );
 
+
     nowSub.textContent =
-        "再生中・バックグラウンド保存中";
+        "再生中・保存しています…";
+
+
+    /*
+     * awaitしない。
+     *
+     * これによってGASの取得完了を待たずに
+     * GitHub Releaseから再生を開始できる。
+     */
+
+    cacheAudioInBackground(song);
 
 
     /* =====================================
-       ④ すぐに通常再生
+       ⑤ 即座に通常再生
     ===================================== */
+
+    console.log(
+        "GitHub Releaseから即時再生:",
+        song.title
+    );
 
     audio.src =
         song.url;
@@ -1562,25 +1325,16 @@ async function playSong(index) {
 
         await audio.play();
 
-    } catch (playError) {
+    } catch (error) {
 
         console.error(
-            "通常再生に失敗:",
-            playError
+            "音声を再生できませんでした:",
+            error
         );
 
         playButton.textContent =
             "▶";
     }
-
-
-    /* =====================================
-       ⑤ 裏でIndexedDB保存
-       再生を待たせない
-    ===================================== */
-
-    saveSongInBackground(song);
-
 }
 
 
@@ -1595,7 +1349,6 @@ playButton.addEventListener(
         if (currentIndex === -1) {
 
             if (songs.length) {
-
                 await playSong(0);
             }
 
@@ -1627,9 +1380,7 @@ playButton.addEventListener(
 audio.addEventListener(
     "play",
     () => {
-
-        playButton.textContent =
-            "Ⅱ";
+        playButton.textContent = "Ⅱ";
     }
 );
 
@@ -1637,9 +1388,7 @@ audio.addEventListener(
 audio.addEventListener(
     "pause",
     () => {
-
-        playButton.textContent =
-            "▶";
+        playButton.textContent = "▶";
     }
 );
 
@@ -1683,11 +1432,8 @@ document
             }
 
             const index =
-                currentIndex >=
-                songs.length - 1
-
+                currentIndex >= songs.length - 1
                     ? 0
-
                     : currentIndex + 1;
 
             playSong(index);
@@ -1708,11 +1454,8 @@ audio.addEventListener(
         }
 
         const next =
-            currentIndex >=
-            songs.length - 1
-
+            currentIndex >= songs.length - 1
                 ? 0
-
                 : currentIndex + 1;
 
         playSong(next);
@@ -1729,9 +1472,7 @@ audio.addEventListener(
     () => {
 
         duration.textContent =
-            formatTime(
-                audio.duration
-            );
+            formatTime(audio.duration);
 
         progress.value = 0;
     }
@@ -1747,12 +1488,9 @@ audio.addEventListener(
     () => {
 
         if (
-            !Number.isFinite(
-                audio.duration
-            ) ||
+            !Number.isFinite(audio.duration) ||
             audio.duration <= 0
         ) {
-
             return;
         }
 
@@ -1763,9 +1501,7 @@ audio.addEventListener(
             ) * 100;
 
         currentTime.textContent =
-            formatTime(
-                audio.currentTime
-            );
+            formatTime(audio.currentTime);
     }
 );
 
@@ -1779,19 +1515,14 @@ progress.addEventListener(
     () => {
 
         if (
-            !Number.isFinite(
-                audio.duration
-            ) ||
+            !Number.isFinite(audio.duration) ||
             audio.duration <= 0
         ) {
-
             return;
         }
 
         audio.currentTime =
-            (
-                progress.value / 100
-            ) *
+            (progress.value / 100) *
             audio.duration;
     }
 );
@@ -1808,9 +1539,7 @@ document
         event => {
 
             audio.volume =
-                Number(
-                    event.target.value
-                );
+                Number(event.target.value);
         }
     );
 
@@ -1834,21 +1563,16 @@ document
 function formatTime(seconds) {
 
     if (!Number.isFinite(seconds)) {
-
         return "0:00";
     }
 
     const min =
-        Math.floor(
-            seconds / 60
-        );
+        Math.floor(seconds / 60);
 
     const sec =
-        Math.floor(
-            seconds % 60
-        )
-        .toString()
-        .padStart(2, "0");
+        Math.floor(seconds % 60)
+            .toString()
+            .padStart(2, "0");
 
     return `${min}:${sec}`;
 }
@@ -1861,30 +1585,18 @@ function formatTime(seconds) {
 function formatSize(bytes) {
 
     if (!Number.isFinite(bytes)) {
-
         return "不明";
     }
 
     if (bytes < 1024) {
-
         return `${bytes} B`;
     }
 
-    if (
-        bytes <
-        1024 * 1024
-    ) {
-
-        return `${(
-            bytes / 1024
-        ).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
     }
 
-    return `${(
-        bytes /
-        1024 /
-        1024
-    ).toFixed(2)} MB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 
@@ -1895,9 +1607,7 @@ function formatSize(bytes) {
 function escapeHtml(text) {
 
     const div =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     div.textContent =
         String(text);
@@ -1909,22 +1619,10 @@ function escapeHtml(text) {
 function escapeAttribute(text) {
 
     return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 
