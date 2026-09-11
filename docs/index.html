@@ -8,264 +8,742 @@
 
 <style>
 *{box-sizing:border-box}
+
 :root{
-  --bg:#000;--sidebar:#050505;--panel:#181818;--hover:#222;
-  --text:#fff;--sub:#aaa;--border:#292929;--accent:#1ed760;
+  --bg:#000;
+  --sidebar:#050505;
+  --panel:#181818;
+  --hover:#222;
+  --text:#fff;
+  --sub:#aaa;
+  --border:#292929;
+  --accent:#1ed760;
 }
+
 html,body{
-  margin:0;width:100%;min-height:100%;
-  background:var(--bg);color:var(--text);
+  margin:0;
+  width:100%;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;
 }
+
 body{overflow-x:hidden}
 button,input{font:inherit}
 
-.app{min-height:100vh;padding-bottom:92px}
+.app{
+  min-height:100vh;
+  padding-bottom:92px;
+}
 
-/* サイドバー */
+/* =========================
+   サイドバー
+========================= */
+
 .sidebar{
-  position:fixed;inset:0 auto 92px 0;width:240px;
-  padding:24px 16px;background:var(--sidebar);z-index:10
+  position:fixed;
+  inset:0 auto 92px 0;
+  width:240px;
+  padding:24px 16px;
+  background:var(--sidebar);
+  z-index:10;
 }
-.logo{
-  padding:0 12px 30px;font-size:22px;font-weight:800
-}
-.logo span{color:var(--accent)}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav-button{
-  width:100%;padding:12px;border:0;border-radius:8px;
-  background:transparent;color:var(--sub);
-  text-align:left;cursor:pointer;font-size:14px;font-weight:600
-}
-.nav-button:hover,.nav-button.active{background:#181818;color:#fff}
-.nav-icon{display:inline-block;width:25px;font-size:18px}
 
-/* メイン */
+.logo{
+  padding:0 12px 30px;
+  font-size:22px;
+  font-weight:800;
+}
+
+.logo span{color:var(--accent)}
+
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.nav-button{
+  width:100%;
+  padding:12px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:var(--sub);
+  text-align:left;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+}
+
+.nav-button:hover,
+.nav-button.active{
+  background:#181818;
+  color:#fff;
+}
+
+.nav-icon{
+  display:inline-block;
+  width:25px;
+  font-size:18px;
+}
+
+/* =========================
+   メイン
+========================= */
+
 .main{
-  margin-left:240px;min-height:calc(100vh - 92px);
+  margin-left:240px;
+  min-height:calc(100vh - 92px);
   padding:28px 34px 40px;
-  background:linear-gradient(#181818 0,#101010 230px,#000 480px)
+  background:linear-gradient(#181818 0,#101010 230px,#000 480px);
 }
-.topbar{display:flex;gap:14px;align-items:center;margin-bottom:34px}
-.search-wrapper{position:relative;flex:1;max-width:600px}
+
+.topbar{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  margin-bottom:34px;
+}
+
+.search-wrapper{
+  position:relative;
+  flex:1;
+  max-width:600px;
+}
+
 .search-icon{
-  position:absolute;left:15px;top:50%;transform:translateY(-50%);
-  color:#777;font-size:18px;pointer-events:none
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#777;
+  font-size:18px;
+  pointer-events:none;
 }
+
 .search{
-  width:100%;height:46px;border:0;outline:0;border-radius:24px;
-  background:#fff;color:#111;padding:0 18px 0 44px;font-size:15px
+  width:100%;
+  height:46px;
+  border:0;
+  outline:0;
+  border-radius:24px;
+  background:#fff;
+  color:#111;
+  padding:0 18px 0 44px;
+  font-size:15px;
 }
+
 .search::placeholder{color:#777}
+
 .refresh{
-  flex:none;width:44px;height:44px;border:0;border-radius:50%;
-  background:#242424;color:#fff;cursor:pointer;font-size:18px
+  flex:none;
+  width:44px;
+  height:44px;
+  border:0;
+  border-radius:50%;
+  background:#242424;
+  color:#fff;
+  cursor:pointer;
+  font-size:18px;
 }
+
 .refresh:hover{background:#333}
 
-.hero{margin-bottom:34px}
-.hero h1{
-  margin:0;font-size:clamp(30px,5vw,48px);
-  line-height:1.1;letter-spacing:-1.5px
-}
-.hero p{margin:10px 0 0;color:var(--sub);font-size:14px}
-.status{margin-bottom:12px;color:var(--sub);font-size:13px}
+/* =========================
+   ヒーロー
+========================= */
 
-/* 曲一覧 */
-.song-header,.song{
+.hero{margin-bottom:34px}
+
+.hero h1{
+  margin:0;
+  font-size:clamp(30px,5vw,48px);
+  line-height:1.1;
+  letter-spacing:-1.5px;
+}
+
+.hero p{
+  margin:10px 0 0;
+  color:var(--sub);
+  font-size:14px;
+}
+
+.status{
+  margin-bottom:12px;
+  color:var(--sub);
+  font-size:13px;
+}
+
+/* =========================
+   曲一覧
+========================= */
+
+.song-header,
+.song{
   display:grid;
   grid-template-columns:42px minmax(0,1fr) 90px 110px;
-  align-items:center
+  align-items:center;
 }
+
 .song-header{
-  padding:0 14px 8px;border-bottom:1px solid var(--border);
-  color:#777;font-size:12px
+  padding:0 14px 8px;
+  border-bottom:1px solid var(--border);
+  color:#777;
+  font-size:12px;
 }
+
 .song{
-  min-height:62px;padding:7px 14px;border-radius:7px;
-  cursor:pointer
+  min-height:62px;
+  padding:7px 14px;
+  border-radius:7px;
+  cursor:pointer;
 }
-.song:hover,.song.playing{background:#181818}
-.song-number{color:#777;font-size:14px}
-.song.playing .song-number{color:var(--accent)}
-.song-info{min-width:0}
+
+.song:hover,
+.song.playing{
+  background:#181818;
+}
+
+.song-number{
+  color:#777;
+  font-size:14px;
+}
+
+.song.playing .song-number{
+  color:var(--accent);
+}
+
+.song-info{
+  min-width:0;
+}
+
 .song-title{
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  font-size:15px;font-weight:500
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-size:15px;
+  font-weight:500;
 }
-.song-subtitle{margin-top:3px;color:#888;font-size:12px}
-.song-size{color:#888;font-size:12px}
-.song-actions{display:flex;justify-content:flex-end;gap:7px}
+
+.song-subtitle{
+  margin-top:3px;
+  color:#888;
+  font-size:12px;
+}
+
+.song-size{
+  color:#888;
+  font-size:12px;
+}
+
+.song-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+}
+
 .icon-button{
-  width:36px;height:36px;border:0;border-radius:50%;
-  background:transparent;color:#aaa;cursor:pointer;font-size:16px
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:#aaa;
+  cursor:pointer;
+  font-size:16px;
 }
-.icon-button:hover{background:#292929;color:#fff}
-.empty,.loading{padding:60px 20px;text-align:center;color:#777}
+
+.icon-button:hover{
+  background:#292929;
+  color:#fff;
+}
+
+.empty,
+.loading{
+  padding:60px 20px;
+  text-align:center;
+  color:#777;
+}
+
 .spinner{
-  width:26px;height:26px;margin:0 auto 14px;
-  border:3px solid #333;border-top-color:var(--accent);
-  border-radius:50%;animation:spin .8s linear infinite
+  width:26px;
+  height:26px;
+  margin:0 auto 14px;
+  border:3px solid #333;
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
 
-/* プレイヤー */
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+/* =========================
+   PCプレイヤー
+========================= */
+
 .player{
-  position:fixed;left:0;right:0;bottom:0;height:92px;
-  display:grid;grid-template-columns:minmax(170px,1fr) minmax(300px,2fr) minmax(170px,1fr);
-  align-items:center;gap:20px;padding:10px 18px;
-  background:#181818;border-top:1px solid var(--border);z-index:100;
-  padding-bottom:max(10px,env(safe-area-inset-bottom))
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:92px;
+  display:grid;
+  grid-template-columns:minmax(170px,1fr) minmax(300px,2fr) minmax(170px,1fr);
+  align-items:center;
+  gap:20px;
+  padding:10px 18px;
+  background:#181818;
+  border-top:1px solid var(--border);
+  z-index:100;
+  padding-bottom:max(10px,env(safe-area-inset-bottom));
 }
-.now-playing{min-width:0}
-.now-playing-title,.now-playing-subtitle{
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis
-}
-.now-playing-title{font-size:13px;font-weight:600}
-.now-playing-subtitle{margin-top:4px;color:#888;font-size:11px}
 
-.controls{display:flex;flex-direction:column;align-items:center;gap:5px}
-.control-buttons{display:flex;align-items:center;gap:18px}
+.now-playing{
+  min-width:0;
+}
+
+.now-playing-title,
+.now-playing-subtitle{
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.now-playing-title{
+  font-size:13px;
+  font-weight:600;
+}
+
+.now-playing-subtitle{
+  margin-top:4px;
+  color:#888;
+  font-size:11px;
+}
+
+.controls{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+}
+
+.control-buttons{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
 .control-button{
-  width:30px;height:30px;padding:0;border:0;
-  background:transparent;color:#b3b3b3;cursor:pointer;font-size:17px
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#b3b3b3;
+  cursor:pointer;
+  font-size:17px;
 }
-.control-button:hover{color:#fff;transform:scale(1.05)}
+
+.control-button:hover{
+  color:#fff;
+  transform:scale(1.05);
+}
+
 .play-button{
-  width:34px;height:34px;border-radius:50%;
-  background:#fff;color:#000
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#fff;
+  color:#000;
 }
-.play-button:hover{background:#fff;color:#000}
+
+.play-button:hover{
+  background:#fff;
+  color:#000;
+}
 
 .progress-area{
-  display:flex;align-items:center;width:min(600px,100%);gap:8px
+  display:flex;
+  align-items:center;
+  width:min(600px,100%);
+  gap:8px;
 }
-.time{min-width:35px;color:#999;font-size:10px;text-align:center}
-.progress,.volume-slider{
-  appearance:none;border-radius:3px;background:#555;cursor:pointer
+
+.time{
+  min-width:35px;
+  color:#999;
+  font-size:10px;
+  text-align:center;
 }
-.progress{width:100%;height:4px}
+
+.progress,
+.volume-slider{
+  appearance:none;
+  border-radius:3px;
+  background:#555;
+  cursor:pointer;
+}
+
+.progress{
+  width:100%;
+  height:4px;
+}
+
 .progress::-webkit-slider-thumb{
-  appearance:none;width:11px;height:11px;border-radius:50%;
-  background:#fff;opacity:0
+  appearance:none;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  background:#fff;
+  opacity:0;
 }
-.progress:hover::-webkit-slider-thumb{opacity:1}
 
-.volume{display:flex;justify-content:flex-end;align-items:center;gap:8px}
-.volume-icon{color:#aaa;font-size:15px}
-.volume-slider{width:100px;height:4px}
+.progress:hover::-webkit-slider-thumb{
+  opacity:1;
+}
+
+.volume{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+}
+
+.volume-icon{
+  color:#aaa;
+  font-size:15px;
+}
+
+.volume-slider{
+  width:100px;
+  height:4px;
+}
+
 .volume-slider::-webkit-slider-thumb{
-  appearance:none;width:11px;height:11px;border-radius:50%;background:#fff
+  appearance:none;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  background:#fff;
 }
-audio{display:none}
 
-/* スマホ */
+audio{
+  display:none;
+}
+
+/* =========================
+   スマホ
+========================= */
+
 @media(max-width:800px){
-  .sidebar{display:none}
 
-  .app{padding-bottom:104px}
+  .sidebar{
+    display:none;
+  }
+
+  .app{
+    padding-bottom:128px;
+  }
 
   .main{
     margin:0;
-    min-height:calc(100vh - 104px);
+    min-height:calc(100vh - 128px);
     padding:16px 14px 30px;
-    background:linear-gradient(#181818,#0b0b0b 300px,#000)
+    background:linear-gradient(#181818,#0b0b0b 300px,#000);
   }
 
-  .topbar{gap:8px;margin-bottom:25px}
-  .search{height:44px;font-size:16px}
-  .refresh{width:42px;height:42px}
+  .topbar{
+    gap:8px;
+    margin-bottom:25px;
+  }
 
-  .hero{margin-bottom:24px}
-  .hero h1{font-size:30px}
-  .hero p{font-size:13px}
+  .search{
+    height:44px;
+    font-size:16px;
+  }
 
-  .song-header{display:none}
+  .refresh{
+    width:42px;
+    height:42px;
+  }
+
+  .hero{
+    margin-bottom:24px;
+  }
+
+  .hero h1{
+    font-size:30px;
+  }
+
+  .hero p{
+    font-size:13px;
+  }
+
+  .song-header{
+    display:none;
+  }
 
   .song{
     grid-template-columns:30px minmax(0,1fr) 40px;
-    min-height:60px;padding:7px 2px
+    min-height:62px;
+    padding:7px 2px;
   }
 
-  .song-title{font-size:14px}
-  .song-subtitle{font-size:11px}
-  .song-size{display:none}
-  .song-actions{gap:0}
-  .download-button{display:none!important}
+  .song-title{
+    font-size:14px;
+  }
 
-  .icon-button{width:38px;height:38px}
+  .song-subtitle{
+    font-size:11px;
+  }
 
-  /* スマホプレイヤー */
+  .song-size{
+    display:none;
+  }
+
+  .song-actions{
+    gap:0;
+  }
+
+  .download-button{
+    display:none!important;
+  }
+
+  .icon-button{
+    width:40px;
+    height:40px;
+  }
+
+  /* =========================
+     スマホプレイヤー
+  ========================= */
+
   .player{
-    height:104px;
+    height:128px;
+
+    display:grid;
+
     grid-template-columns:minmax(0,1fr) auto;
-    grid-template-rows:45px 38px;
+    grid-template-rows:42px 42px 28px;
+
     gap:0 10px;
-    padding:7px 12px 7px;
-    padding-bottom:max(7px,env(safe-area-inset-bottom))
+
+    padding:
+      8px 12px
+      max(8px,env(safe-area-inset-bottom));
+
+    align-items:center;
   }
 
   .now-playing{
+    grid-column:1;
+    grid-row:1;
     min-width:0;
-    align-self:center
   }
 
-  .now-playing-title{font-size:12px}
-  .now-playing-subtitle{font-size:10px}
+  .now-playing-title{
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .now-playing-subtitle{
+    margin-top:3px;
+    font-size:10px;
+  }
+
+  /*
+     スマホでは再生ボタンを
+     曲情報の右側にも配置
+  */
 
   .controls{
     grid-column:1 / 3;
     grid-row:2;
+    display:flex;
     align-items:center;
-    justify-content:center
+    justify-content:center;
   }
 
-  .control-buttons{gap:22px}
-  .control-button{width:30px;height:30px;font-size:16px}
+  .control-buttons{
+    gap:30px;
+  }
+
+  .control-button{
+    width:34px;
+    height:34px;
+    font-size:18px;
+  }
+
+  .play-button{
+    width:40px;
+    height:40px;
+    font-size:17px;
+  }
+
+  /*
+     シャッフル・リピートは
+     スマホでは隠す
+  */
 
   .control-button.shuffle,
-  .control-button.repeat{display:none}
+  .control-button.repeat{
+    display:none;
+  }
 
-  .play-button{width:36px;height:36px}
+  .volume{
+    display:none;
+  }
 
-  .volume{display:none}
+  /*
+     シークバー
+     
+     一番下ではなく、
+     操作ボタンのすぐ下に配置。
+     
+     時間も表示する。
+  */
 
   .progress-area{
-    position:absolute;
-    left:0;right:0;bottom:0;
-    width:100%;gap:0
+    position:static;
+
+    grid-column:1 / 3;
+    grid-row:3;
+
+    width:100%;
+
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr) 36px;
+
+    align-items:center;
+
+    gap:7px;
   }
 
-  .progress{height:3px;border-radius:0}
-  .time{display:none}
+  .time{
+    display:block;
+    min-width:0;
+    font-size:10px;
+    color:#aaa;
+  }
+
+  .time:last-child{
+    text-align:right;
+  }
+
+  .progress{
+    width:100%;
+    height:5px;
+  }
+
+  /*
+     スマホではつまみを常時表示
+  */
+
+  .progress::-webkit-slider-thumb{
+    opacity:1;
+    width:13px;
+    height:13px;
+  }
 }
+
+/* =========================
+   小型スマホ
+========================= */
 
 @media(max-width:430px){
-  .main{padding-left:12px;padding-right:12px}
-  .hero h1{font-size:28px}
-  .hero p{font-size:12px}
 
-  .song{grid-template-columns:27px minmax(0,1fr) 38px}
-  .song-title{font-size:13px}
-  .song-subtitle{font-size:10px}
-
-  .player{
-    height:102px;
-    grid-template-rows:43px 38px
+  .main{
+    padding-left:12px;
+    padding-right:12px;
   }
 
-  .control-buttons{gap:18px}
+  .hero h1{
+    font-size:28px;
+  }
+
+  .hero p{
+    font-size:12px;
+  }
+
+  .song{
+    grid-template-columns:27px minmax(0,1fr) 40px;
+  }
+
+  .song-title{
+    font-size:13px;
+  }
+
+  .song-subtitle{
+    font-size:10px;
+  }
+
+  .player{
+    height:126px;
+    grid-template-rows:40px 42px 28px;
+  }
+
+  .control-buttons{
+    gap:24px;
+  }
+
+  .control-button{
+    width:32px;
+  }
+
+  .play-button{
+    width:39px;
+    height:39px;
+  }
 }
 
+/* =========================
+   かなり小さいスマホ
+========================= */
+
 @media(max-width:350px){
-  .main{padding-left:10px;padding-right:10px}
 
-  .search{padding-left:40px}
-  .search-icon{left:13px}
+  .main{
+    padding-left:10px;
+    padding-right:10px;
+  }
 
-  .control-buttons{gap:12px}
-  .control-button{width:28px}
-  .play-button{width:35px;height:35px}
+  .search{
+    padding-left:40px;
+  }
+
+  .search-icon{
+    left:13px;
+  }
+
+  .player{
+    height:124px;
+    grid-template-rows:39px 41px 28px;
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .control-buttons{
+    gap:17px;
+  }
+
+  .control-button{
+    width:30px;
+    font-size:17px;
+  }
+
+  .play-button{
+    width:38px;
+    height:38px;
+  }
+
+  .progress-area{
+    grid-template-columns:34px minmax(0,1fr) 34px;
+    gap:5px;
+  }
 }
 </style>
 </head>
@@ -275,64 +753,114 @@ audio{display:none}
 <div class="app">
 
 <aside class="sidebar">
-  <div class="logo"><span>●</span> 音声ファイル</div>
+
+  <div class="logo">
+    <span>●</span> 音声ファイル
+  </div>
 
   <nav class="nav">
+
     <button class="nav-button active" id="homeButton" type="button">
-      <span class="nav-icon">⌂</span>ホーム
+      <span class="nav-icon">⌂</span>
+      ホーム
     </button>
 
     <button class="nav-button" id="refreshButton" type="button">
-      <span class="nav-icon">↻</span>更新
+      <span class="nav-icon">↻</span>
+      更新
     </button>
+
   </nav>
+
 </aside>
+
 
 <main class="main">
 
   <div class="topbar">
+
     <div class="search-wrapper">
+
       <span class="search-icon">⌕</span>
-      <input id="search" class="search" type="search"
-             placeholder="曲名を検索" autocomplete="off">
+
+      <input
+        id="search"
+        class="search"
+        type="search"
+        placeholder="曲名を検索"
+        autocomplete="off"
+      >
+
     </div>
 
-    <button id="refresh" class="refresh"
-            title="更新" aria-label="更新" type="button">↻</button>
+    <button
+      id="refresh"
+      class="refresh"
+      title="更新"
+      aria-label="更新"
+      type="button"
+    >
+      ↻
+    </button>
+
   </div>
 
+
   <section class="hero">
+
     <h1>音声ファイル</h1>
-    <p>GitHub Releasesから音声を自動取得</p>
+
+    <p>
+      GitHub Releasesから音声を自動取得
+    </p>
+
   </section>
+
 
   <div id="status" class="status">
     音声ファイルを取得しています...
   </div>
 
+
   <div class="song-list">
+
     <div class="song-header">
+
       <div>#</div>
       <div>タイトル</div>
       <div>サイズ</div>
       <div></div>
+
     </div>
 
+
     <div id="songs">
+
       <div class="loading">
+
         <div class="spinner"></div>
+
         音声ファイルを読み込んでいます...
+
       </div>
+
     </div>
+
   </div>
 
 </main>
+
 </div>
 
-<!-- プレイヤー -->
+
+<!-- =========================
+     プレイヤー
+========================= -->
+
 <div class="player">
 
   <div class="now-playing">
+
     <div id="nowTitle" class="now-playing-title">
       再生する曲を選択してください
     </div>
@@ -340,563 +868,1583 @@ audio{display:none}
     <div id="nowSubtitle" class="now-playing-subtitle">
       音声ファイル
     </div>
+
   </div>
+
 
   <div class="controls">
+
     <div class="control-buttons">
 
-      <button id="shuffle" class="control-button shuffle"
-              title="シャッフル" aria-label="シャッフル">🔀</button>
+      <button
+        id="shuffle"
+        class="control-button shuffle"
+        title="シャッフル"
+        aria-label="シャッフル"
+        type="button"
+      >
+        🔀
+      </button>
 
-      <button id="previous" class="control-button"
-              title="前の曲" aria-label="前の曲">⏮</button>
 
-      <button id="play" class="control-button play-button"
-              title="再生" aria-label="再生">▶</button>
+      <button
+        id="previous"
+        class="control-button"
+        title="前の曲"
+        aria-label="前の曲"
+        type="button"
+      >
+        ⏮
+      </button>
 
-      <button id="next" class="control-button"
-              title="次の曲" aria-label="次の曲">⏭</button>
 
-      <button id="repeat" class="control-button repeat"
-              title="リピート" aria-label="リピート">🔁</button>
+      <button
+        id="play"
+        class="control-button play-button"
+        title="再生"
+        aria-label="再生"
+        type="button"
+      >
+        ▶
+      </button>
+
+
+      <button
+        id="next"
+        class="control-button"
+        title="次の曲"
+        aria-label="次の曲"
+        type="button"
+      >
+        ⏭
+      </button>
+
+
+      <button
+        id="repeat"
+        class="control-button repeat"
+        title="リピート"
+        aria-label="リピート"
+        type="button"
+      >
+        🔁
+      </button>
 
     </div>
+
 
     <div class="progress-area">
-      <span id="currentTime" class="time">0:00</span>
-      <input id="progress" class="progress"
-             type="range" min="0" max="100" value="0" step="0.1">
-      <span id="duration" class="time">0:00</span>
+
+      <span
+        id="currentTime"
+        class="time"
+      >
+        0:00
+      </span>
+
+
+      <input
+        id="progress"
+        class="progress"
+        type="range"
+        min="0"
+        max="100"
+        value="0"
+        step="0.1"
+        aria-label="再生位置"
+      >
+
+
+      <span
+        id="duration"
+        class="time"
+      >
+        0:00
+      </span>
+
     </div>
+
   </div>
 
+
   <div class="volume">
-    <span class="volume-icon">🔊</span>
-    <input id="volume" class="volume-slider"
-           type="range" min="0" max="1" step="0.01" value="1">
+
+    <span class="volume-icon">
+      🔊
+    </span>
+
+    <input
+      id="volume"
+      class="volume-slider"
+      type="range"
+      min="0"
+      max="1"
+      step="0.01"
+      value="1"
+      aria-label="音量"
+    >
+
   </div>
 
 </div>
 
-<audio id="audio" preload="metadata"></audio>
+
+<audio
+  id="audio"
+  preload="metadata"
+></audio>
+
 
 <script>
+
+/* =========================
+   GitHub
+========================= */
+
 const OWNER="aoaoaoreinn-a11y";
 const REPO="yt";
 const RELEASE_TAG="audio";
-const GAS_URL="https://script.google.com/macros/s/AKfycbyRoupgx5PeSQjOo1XCpCExsvIp4dJ94iN8BriASIOULTUNOMaotXdZ0M1beI5x5TZ_tA/exec";
+
+
+/* =========================
+   GAS
+========================= */
+
+const GAS_URL=
+  "https://script.google.com/macros/s/AKfycbyRoupgx5PeSQjOo1XCpCExsvIp4dJ94iN8BriASIOULTUNOMaotXdZ0M1beI5x5TZ_tA/exec";
+
+
+/* =========================
+   IndexedDB
+========================= */
 
 const DB_NAME="MyAudioLibrary";
 const DB_VERSION=1;
 const STORE_NAME="audio";
 
 let db=null;
+
+const cachingSongs=new Set();
+
+
+function openDatabase(){
+
+  return new Promise((resolve,reject)=>{
+
+    if(!("indexedDB" in window)){
+
+      reject(
+        new Error("IndexedDBが利用できません。")
+      );
+
+      return;
+    }
+
+
+    const request=
+      indexedDB.open(
+        DB_NAME,
+        DB_VERSION
+      );
+
+
+    request.onupgradeneeded=e=>{
+
+      const database=e.target.result;
+
+      if(
+        !database.objectStoreNames.contains(
+          STORE_NAME
+        )
+      ){
+
+        database.createObjectStore(
+          STORE_NAME,
+          {keyPath:"name"}
+        );
+
+      }
+
+    };
+
+
+    request.onsuccess=e=>{
+
+      db=e.target.result;
+
+      db.onversionchange=()=>{
+        db.close();
+      };
+
+      console.log(
+        "IndexedDB initialized."
+      );
+
+      resolve(db);
+
+    };
+
+
+    request.onerror=()=>{
+
+      reject(
+        request.error ||
+        new Error(
+          "IndexedDBを開けませんでした。"
+        )
+      );
+
+    };
+
+  });
+
+}
+
+
+function getCachedAudio(name){
+
+  return new Promise((resolve,reject)=>{
+
+    if(!db){
+
+      resolve(null);
+
+      return;
+    }
+
+
+    let transaction;
+
+    try{
+
+      transaction=
+        db.transaction(
+          STORE_NAME,
+          "readonly"
+        );
+
+    }catch(error){
+
+      reject(error);
+
+      return;
+    }
+
+
+    const request=
+      transaction
+        .objectStore(STORE_NAME)
+        .get(name);
+
+
+    request.onsuccess=()=>{
+
+      const result=request.result;
+
+      resolve(
+        result &&
+        result.data instanceof Blob
+          ? result.data
+          : null
+      );
+
+    };
+
+
+    request.onerror=()=>{
+
+      reject(
+        request.error ||
+        new Error(
+          "IndexedDB読み込みエラー"
+        )
+      );
+
+    };
+
+  });
+
+}
+
+
+function saveAudio(name,blob){
+
+  return new Promise((resolve,reject)=>{
+
+    if(!db){
+
+      reject(
+        new Error(
+          "IndexedDBが開かれていません。"
+        )
+      );
+
+      return;
+    }
+
+
+    const request=
+      db
+        .transaction(
+          STORE_NAME,
+          "readwrite"
+        )
+        .objectStore(STORE_NAME)
+        .put({
+          name:name,
+          data:blob,
+          savedAt:Date.now()
+        });
+
+
+    request.onsuccess=resolve;
+
+
+    request.onerror=()=>{
+
+      reject(
+        request.error ||
+        new Error(
+          "IndexedDB保存エラー"
+        )
+      );
+
+    };
+
+  });
+
+}
+
+
+/* =========================
+   状態
+========================= */
+
 let songs=[];
 let currentIndex=-1;
 let shuffled=false;
 let repeating=false;
 let currentObjectURL=null;
 
-const cachingSongs=new Set();
 
-const audio=document.getElementById("audio");
-const songsContainer=document.getElementById("songs");
-const search=document.getElementById("search");
-const status=document.getElementById("status");
-const nowTitle=document.getElementById("nowTitle");
-const nowSubtitle=document.getElementById("nowSubtitle");
-const playButton=document.getElementById("play");
-const progress=document.getElementById("progress");
-const currentTimeElement=document.getElementById("currentTime");
-const durationElement=document.getElementById("duration");
-const volume=document.getElementById("volume");
-const shuffleButton=document.getElementById("shuffle");
-const repeatButton=document.getElementById("repeat");
+/* =========================
+   DOM
+========================= */
 
-function openDatabase(){
-  return new Promise((resolve,reject)=>{
-    if(!("indexedDB" in window))
-      return reject(new Error("IndexedDBが利用できません。"));
+const audio=
+  document.getElementById("audio");
 
-    const request=indexedDB.open(DB_NAME,DB_VERSION);
+const songsContainer=
+  document.getElementById("songs");
 
-    request.onupgradeneeded=e=>{
-      const database=e.target.result;
-      if(!database.objectStoreNames.contains(STORE_NAME))
-        database.createObjectStore(STORE_NAME,{keyPath:"name"});
-    };
+const search=
+  document.getElementById("search");
 
-    request.onsuccess=e=>{
-      db=e.target.result;
-      db.onversionchange=()=>db.close();
-      console.log("IndexedDB initialized.");
-      resolve(db);
-    };
+const status=
+  document.getElementById("status");
 
-    request.onerror=()=>reject(
-      request.error||new Error("IndexedDBを開けませんでした。")
-    );
-  });
-}
+const nowTitle=
+  document.getElementById("nowTitle");
 
-function getCachedAudio(name){
-  return new Promise((resolve,reject)=>{
-    if(!db)return resolve(null);
+const nowSubtitle=
+  document.getElementById("nowSubtitle");
 
-    let tx;
-    try{tx=db.transaction(STORE_NAME,"readonly")}
-    catch(e){return reject(e)}
+const playButton=
+  document.getElementById("play");
 
-    const request=tx.objectStore(STORE_NAME).get(name);
+const progress=
+  document.getElementById("progress");
 
-    request.onsuccess=()=>{
-      const result=request.result;
-      resolve(result?.data instanceof Blob?result.data:null);
-    };
+const currentTimeElement=
+  document.getElementById("currentTime");
 
-    request.onerror=()=>reject(
-      request.error||new Error("IndexedDB読み込みエラー")
-    );
-  });
-}
+const durationElement=
+  document.getElementById("duration");
 
-function saveAudio(name,blob){
-  return new Promise((resolve,reject)=>{
-    if(!db)
-      return reject(new Error("IndexedDBが開かれていません。"));
+const volume=
+  document.getElementById("volume");
 
-    const request=db
-      .transaction(STORE_NAME,"readwrite")
-      .objectStore(STORE_NAME)
-      .put({name,data:blob,savedAt:Date.now()});
+const shuffleButton=
+  document.getElementById("shuffle");
 
-    request.onsuccess=resolve;
-    request.onerror=()=>reject(
-      request.error||new Error("IndexedDB保存エラー")
-    );
-  });
-}
+const repeatButton=
+  document.getElementById("repeat");
+
+
+/* =========================
+   GAS JSONP
+========================= */
 
 function callGAS(params){
-  return new Promise((resolve,reject)=>{
-    const callbackName="__gas_"+Date.now()+"_"+
-      Math.random().toString(36).slice(2);
 
-    const script=document.createElement("script");
+  return new Promise((resolve,reject)=>{
+
+    const callbackName=
+      "__gas_" +
+      Date.now() +
+      "_" +
+      Math.random()
+        .toString(36)
+        .slice(2);
+
+
+    const script=
+      document.createElement("script");
+
+
     let finished=false;
 
+
     const cleanup=()=>{
+
       if(finished)return;
+
       finished=true;
+
       delete window[callbackName];
+
       script.remove();
+
     };
 
-    const timeout=setTimeout(()=>{
-      cleanup();
-      reject(new Error("GASへの接続がタイムアウトしました。"));
-    },30000);
+
+    const timeout=
+      setTimeout(()=>{
+
+        cleanup();
+
+        reject(
+          new Error(
+            "GASへの接続がタイムアウトしました。"
+          )
+        );
+
+      },30000);
+
 
     window[callbackName]=data=>{
+
       if(finished)return;
+
       clearTimeout(timeout);
+
       cleanup();
 
-      if(!data||data.error)
-        return reject(new Error(data?.error||"GASエラー"));
+
+      if(!data || data.error){
+
+        reject(
+          new Error(
+            data?.error ||
+            "GASエラー"
+          )
+        );
+
+        return;
+      }
+
 
       resolve(data);
+
     };
+
 
     script.onerror=()=>{
+
       clearTimeout(timeout);
+
       cleanup();
-      reject(new Error("GASへの接続に失敗しました。"));
+
+      reject(
+        new Error(
+          "GASへの接続に失敗しました。"
+        )
+      );
+
     };
 
-    const query=new URLSearchParams({
-      ...params,
-      callback:callbackName
-    });
 
-    script.src=GAS_URL+"?"+query;
+    const query=
+      new URLSearchParams({
+        ...params,
+        callback:callbackName
+      });
+
+
+    script.src=
+      GAS_URL +
+      "?" +
+      query.toString();
+
+
     document.head.appendChild(script);
+
   });
+
 }
+
+
+/* =========================
+   GAS → 音声
+========================= */
 
 async function getAudioFromGAS(videoId){
-  const data=await callGAS({id:videoId});
 
-  if(!data.data)
-    throw new Error("GASから音声データが返されませんでした。");
+  const data=
+    await callGAS({
+      id:videoId
+    });
 
-  return {
-    blob:base64ToBlob(data.data,data.mimeType||"audio/ogg"),
+
+  if(!data.data){
+
+    throw new Error(
+      "GASから音声データが返されませんでした。"
+    );
+
+  }
+
+
+  return{
+
+    blob:
+      base64ToBlob(
+        data.data,
+        data.mimeType || "audio/ogg"
+      ),
+
     name:data.name,
+
     label:data.label
+
   };
+
 }
 
-function base64ToBlob(base64,mimeType){
+
+/* =========================
+   Base64 → Blob
+========================= */
+
+function base64ToBlob(
+  base64,
+  mimeType
+){
+
   const binary=atob(base64);
-  const bytes=new Uint8Array(binary.length);
 
-  for(let i=0;i<binary.length;i++)
-    bytes[i]=binary.charCodeAt(i);
+  const bytes=
+    new Uint8Array(
+      binary.length
+    );
 
-  return new Blob([bytes],{type:mimeType||"audio/ogg"});
+
+  for(
+    let i=0;
+    i<binary.length;
+    i++
+  ){
+
+    bytes[i]=
+      binary.charCodeAt(i);
+
+  }
+
+
+  return new Blob(
+    [bytes],
+    {
+      type:
+        mimeType ||
+        "audio/ogg"
+    }
+  );
+
 }
+
+
+/* =========================
+   バックグラウンド保存
+========================= */
 
 async function cacheSongInBackground(song){
-  if(cachingSongs.has(song.name))return;
+
+  if(
+    cachingSongs.has(song.name)
+  ){
+
+    return;
+  }
+
 
   cachingSongs.add(song.name);
 
-  try{
-    console.log("バックグラウンド保存開始:",song.title);
 
-    const result=await getAudioFromGAS(song.id);
-    await saveAudio(song.name,result.blob);
+  try{
+
+    console.log(
+      "バックグラウンド保存開始:",
+      song.title
+    );
+
+
+    const result=
+      await getAudioFromGAS(
+        song.id
+      );
+
+
+    await saveAudio(
+      song.name,
+      result.blob
+    );
+
 
     console.log(
       "IndexedDBへバックグラウンド保存完了:",
       song.title
     );
+
+
   }catch(error){
+
     console.warn(
       "バックグラウンド保存失敗:",
       song.title,
       error
     );
+
+
   }finally{
-    cachingSongs.delete(song.name);
-  }
-}
 
-function getDirectAudioURL(song){
-  return `https://github.com/${OWNER}/${REPO}/releases/download/${RELEASE_TAG}/${encodeURIComponent(song.name)}`;
-}
-
-async function loadSongs(){
-  status.textContent="音声ファイルを取得しています...";
-  songsContainer.innerHTML=
-    `<div class="loading"><div class="spinner"></div>音声ファイルを読み込んでいます...</div>`;
-
-  try{
-    console.log("GASから曲一覧を取得しています...");
-
-    const data=await callGAS({list:"1"});
-    songs=Array.isArray(data.assets)?data.assets:[];
-
-    songs.sort((a,b)=>
-      String(a.title||"").localeCompare(
-        String(b.title||""),"ja"
-      )
+    cachingSongs.delete(
+      song.name
     );
 
-    renderSongs();
-    status.textContent=`${songs.length}曲`;
-
-    console.log("曲一覧取得完了:",songs.length,"曲");
-  }catch(error){
-    console.error("曲一覧の取得に失敗しました:",error);
-
-    status.textContent="音声ファイルを取得できませんでした。";
-
-    songsContainer.innerHTML=
-      `<div class="empty">
-        音声ファイルを取得できませんでした。<br>
-        <small>しばらく待ってから更新してください。</small>
-      </div>`;
   }
+
 }
 
-function formatSize(bytes){
-  bytes=Number(bytes);
-  if(!Number.isFinite(bytes))return"不明";
-  if(bytes<1024)return`${bytes} B`;
-  if(bytes<1024*1024)return`${(bytes/1024).toFixed(1)} KB`;
-  return`${(bytes/1024/1024).toFixed(2)} MB`;
-}
 
-function formatTime(seconds){
-  if(!Number.isFinite(seconds))return"0:00";
+/* =========================
+   GitHub直接URL
+========================= */
 
-  const m=Math.floor(seconds/60);
-  const s=Math.floor(seconds%60).toString().padStart(2,"0");
+function getDirectAudioURL(song){
 
-  return`${m}:${s}`;
-}
-
-function renderSongs(){
-  const query=search.value.trim().toLowerCase();
-
-  const filtered=songs.filter(song=>
-    String(song.title||"").toLowerCase().includes(query)
+  return(
+    "https://github.com/" +
+    OWNER +
+    "/" +
+    REPO +
+    "/releases/download/" +
+    RELEASE_TAG +
+    "/" +
+    encodeURIComponent(song.name)
   );
 
-  status.textContent=`${filtered.length}曲`;
-  songsContainer.innerHTML="";
+}
 
-  if(!filtered.length){
-    songsContainer.innerHTML=
-      `<div class="empty">該当する音声ファイルがありません。</div>`;
-    return;
-  }
 
-  filtered.forEach((song,index)=>{
-    const realIndex=songs.indexOf(song);
-    const element=document.createElement("div");
+/* =========================
+   曲一覧
+========================= */
 
-    element.className="song";
+async function loadSongs(){
 
-    if(realIndex===currentIndex)
-      element.classList.add("playing");
+  status.textContent=
+    "音声ファイルを取得しています...";
 
-    element.innerHTML=`
-      <div class="song-number">${index+1}</div>
 
-      <div class="song-info">
-        <div class="song-title">
-          ${escapeHtml(song.title||song.name)}
-        </div>
-        <div class="song-subtitle">Opus</div>
-      </div>
+  songsContainer.innerHTML=`
+    <div class="loading">
+      <div class="spinner"></div>
+      音声ファイルを読み込んでいます...
+    </div>
+  `;
 
-      <div class="song-size">
-        ${formatSize(song.size)}
-      </div>
 
-      <div class="song-actions">
-        <button class="icon-button"
-                title="再生" aria-label="再生">▶</button>
+  try{
 
-        <a class="icon-button download-button"
-           href="${escapeAttribute(getDirectAudioURL(song))}"
-           download title="ダウンロード"
-           aria-label="ダウンロード">↓</a>
+    console.log(
+      "GASから曲一覧を取得しています..."
+    );
+
+
+    const data=
+      await callGAS({
+        list:"1"
+      });
+
+
+    songs=
+      Array.isArray(data.assets)
+        ? data.assets
+        : [];
+
+
+    songs.sort(
+      (a,b)=>
+        String(a.title || "")
+          .localeCompare(
+            String(b.title || ""),
+            "ja"
+          )
+    );
+
+
+    renderSongs();
+
+
+    status.textContent=
+      `${songs.length}曲`;
+
+
+    console.log(
+      "曲一覧取得完了:",
+      songs.length,
+      "曲"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "曲一覧の取得に失敗しました:",
+      error
+    );
+
+
+    status.textContent=
+      "音声ファイルを取得できませんでした。";
+
+
+    songsContainer.innerHTML=`
+      <div class="empty">
+        音声ファイルを取得できませんでした。<br>
+        <small>
+          しばらく待ってから更新してください。
+        </small>
       </div>
     `;
 
-    element.addEventListener("click",e=>{
-      if(e.target.closest("button")||e.target.closest("a"))return;
-      playSong(realIndex);
-    });
-
-    element.querySelector("button").addEventListener("click",e=>{
-      e.stopPropagation();
-      playSong(realIndex);
-    });
-
-    songsContainer.appendChild(element);
-  });
-}
-
-async function playSong(index){
-  if(index<0||index>=songs.length)return;
-
-  currentIndex=index;
-  const song=songs[index];
-
-  nowTitle.textContent=song.title||song.name;
-  nowSubtitle.textContent=`Opus · ${formatSize(song.size)}`;
-  playButton.textContent="▶";
-
-  if(currentObjectURL){
-    URL.revokeObjectURL(currentObjectURL);
-    currentObjectURL=null;
   }
 
+}
+
+
+/* =========================
+   サイズ
+========================= */
+
+function formatSize(bytes){
+
+  bytes=Number(bytes);
+
+  if(!Number.isFinite(bytes))
+    return "不明";
+
+
+  if(bytes<1024)
+    return `${bytes} B`;
+
+
+  if(bytes<1024*1024)
+    return `${(bytes/1024).toFixed(1)} KB`;
+
+
+  return `${(bytes/1024/1024).toFixed(2)} MB`;
+
+}
+
+
+/* =========================
+   時間
+========================= */
+
+function formatTime(seconds){
+
+  if(!Number.isFinite(seconds))
+    return "0:00";
+
+
+  const minutes=
+    Math.floor(seconds/60);
+
+
+  const secondsPart=
+    Math.floor(seconds%60)
+      .toString()
+      .padStart(2,"0");
+
+
+  return `${minutes}:${secondsPart}`;
+
+}
+
+
+/* =========================
+   曲一覧描画
+========================= */
+
+function renderSongs(){
+
+  const query=
+    search.value
+      .trim()
+      .toLowerCase();
+
+
+  const filtered=
+    songs.filter(song=>
+      String(song.title || "")
+        .toLowerCase()
+        .includes(query)
+    );
+
+
+  status.textContent=
+    `${filtered.length}曲`;
+
+
+  songsContainer.innerHTML="";
+
+
+  if(!filtered.length){
+
+    songsContainer.innerHTML=
+      `<div class="empty">
+        該当する音声ファイルがありません。
+      </div>`;
+
+    return;
+  }
+
+
+  filtered.forEach(
+    (song,index)=>{
+
+      const realIndex=
+        songs.indexOf(song);
+
+
+      const element=
+        document.createElement("div");
+
+
+      element.className="song";
+
+
+      if(
+        realIndex===currentIndex
+      ){
+
+        element.classList.add(
+          "playing"
+        );
+
+      }
+
+
+      element.innerHTML=`
+
+        <div class="song-number">
+          ${index+1}
+        </div>
+
+        <div class="song-info">
+
+          <div class="song-title">
+            ${escapeHtml(
+              song.title ||
+              song.name
+            )}
+          </div>
+
+          <div class="song-subtitle">
+            Opus
+          </div>
+
+        </div>
+
+        <div class="song-size">
+          ${formatSize(song.size)}
+        </div>
+
+        <div class="song-actions">
+
+          <button
+            class="icon-button"
+            title="再生"
+            aria-label="再生"
+            type="button"
+          >
+            ▶
+          </button>
+
+          <a
+            class="icon-button download-button"
+            href="${escapeAttribute(
+              getDirectAudioURL(song)
+            )}"
+            download
+            title="ダウンロード"
+            aria-label="ダウンロード"
+          >
+            ↓
+          </a>
+
+        </div>
+
+      `;
+
+
+      element.addEventListener(
+        "click",
+        event=>{
+
+          if(
+            event.target.closest("button") ||
+            event.target.closest("a")
+          ){
+
+            return;
+          }
+
+
+          playSong(realIndex);
+
+        }
+      );
+
+
+      element
+        .querySelector("button")
+        .addEventListener(
+          "click",
+          event=>{
+
+            event.stopPropagation();
+
+            playSong(realIndex);
+
+          }
+        );
+
+
+      songsContainer.appendChild(
+        element
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   曲再生
+========================= */
+
+async function playSong(index){
+
+  if(
+    index<0 ||
+    index>=songs.length
+  ){
+
+    return;
+  }
+
+
+  currentIndex=index;
+
+
+  const song=songs[index];
+
+
+  nowTitle.textContent=
+    song.title ||
+    song.name;
+
+
+  nowSubtitle.textContent=
+    `Opus · ${formatSize(song.size)}`;
+
+
+  playButton.textContent="▶";
+
+
+  if(currentObjectURL){
+
+    URL.revokeObjectURL(
+      currentObjectURL
+    );
+
+    currentObjectURL=null;
+
+  }
+
+
   audio.pause();
+
+
   renderSongs();
+
 
   let cachedBlob=null;
 
+
   try{
-    cachedBlob=await getCachedAudio(song.name);
+
+    cachedBlob=
+      await getCachedAudio(
+        song.name
+      );
+
   }catch(error){
-    console.warn("IndexedDB読み込み失敗:",error);
+
+    console.warn(
+      "IndexedDB読み込み失敗:",
+      error
+    );
+
   }
+
 
   /* キャッシュあり */
-  if(cachedBlob){
-    console.log("IndexedDBから再生:",song.title);
 
-    currentObjectURL=URL.createObjectURL(cachedBlob);
-    audio.src=currentObjectURL;
+  if(cachedBlob){
+
+    console.log(
+      "IndexedDBから再生:",
+      song.title
+    );
+
+
+    currentObjectURL=
+      URL.createObjectURL(
+        cachedBlob
+      );
+
+
+    audio.src=
+      currentObjectURL;
+
 
     try{
+
       await audio.play();
+
     }catch(error){
-      console.error("IndexedDB音声の再生に失敗:",error);
+
+      console.error(
+        "IndexedDB音声の再生に失敗:",
+        error
+      );
+
     }
 
+
     return;
+
   }
+
 
   /* キャッシュなし */
-  console.log("IndexedDBに存在しません:",song.title);
 
-  audio.src=getDirectAudioURL(song);
+  console.log(
+    "IndexedDBに存在しません:",
+    song.title
+  );
+
+
+  audio.src=
+    getDirectAudioURL(song);
+
 
   try{
+
     await audio.play();
-    console.log("通常再生を即時開始:",song.title);
+
+
+    console.log(
+      "通常再生を即時開始:",
+      song.title
+    );
+
   }catch(error){
-    console.error("通常再生に失敗:",error);
+
+    console.error(
+      "通常再生に失敗:",
+      error
+    );
+
   }
 
-  /* 再生を止めずに裏で保存 */
-  cacheSongInBackground(song);
+
+  /*
+     再生を止めずに
+     バックグラウンド保存
+  */
+
+  cacheSongInBackground(
+    song
+  );
+
 }
 
-playButton.addEventListener("click",async()=>{
-  if(currentIndex===-1){
-    if(songs.length)await playSong(0);
-    return;
+
+/* =========================
+   再生 / 一時停止
+========================= */
+
+playButton.addEventListener(
+  "click",
+  async()=>{
+
+    if(currentIndex===-1){
+
+      if(songs.length){
+
+        await playSong(0);
+
+      }
+
+      return;
+    }
+
+
+    if(audio.paused){
+
+      try{
+
+        await audio.play();
+
+      }catch(error){
+
+        console.error(
+          "再生に失敗:",
+          error
+        );
+
+      }
+
+    }else{
+
+      audio.pause();
+
+    }
+
   }
+);
 
-  if(audio.paused){
-    try{await audio.play()}
-    catch(error){console.error("再生に失敗:",error)}
-  }else{
-    audio.pause();
+
+/* =========================
+   再生状態
+========================= */
+
+audio.addEventListener(
+  "play",
+  ()=>{
+
+    playButton.textContent=
+      "❚❚";
+
   }
-});
+);
 
-audio.addEventListener("play",()=>{
-  playButton.textContent="❚❚";
-});
 
-audio.addEventListener("pause",()=>{
-  playButton.textContent="▶";
-});
+audio.addEventListener(
+  "pause",
+  ()=>{
+
+    playButton.textContent=
+      "▶";
+
+  }
+);
+
+
+/* =========================
+   前後
+========================= */
 
 function changeSong(direction){
-  if(!songs.length)return;
+
+  if(!songs.length)
+    return;
+
 
   let index;
 
-  if(shuffled){
-    index=Math.floor(Math.random()*songs.length);
-  }else{
-    index=currentIndex+direction;
 
-    if(index<0)index=songs.length-1;
-    if(index>=songs.length)index=0;
+  if(shuffled){
+
+    index=
+      Math.floor(
+        Math.random() *
+        songs.length
+      );
+
+  }else{
+
+    index=
+      currentIndex +
+      direction;
+
+
+    if(index<0)
+      index=songs.length-1;
+
+
+    if(index>=songs.length)
+      index=0;
+
   }
+
 
   playSong(index);
+
 }
 
-document.getElementById("previous")
-  .addEventListener("click",()=>changeSong(-1));
 
-document.getElementById("next")
-  .addEventListener("click",()=>changeSong(1));
+document
+  .getElementById("previous")
+  .addEventListener(
+    "click",
+    ()=>changeSong(-1)
+  );
 
-shuffleButton.addEventListener("click",()=>{
-  shuffled=!shuffled;
-  shuffleButton.classList.toggle("active",shuffled);
-});
 
-repeatButton.addEventListener("click",()=>{
-  repeating=!repeating;
-  repeatButton.classList.toggle("active",repeating);
-});
+document
+  .getElementById("next")
+  .addEventListener(
+    "click",
+    ()=>changeSong(1)
+  );
 
-audio.addEventListener("ended",()=>{
-  if(repeating){
-    audio.currentTime=0;
-    audio.play();
-    return;
+
+/* =========================
+   シャッフル
+========================= */
+
+shuffleButton.addEventListener(
+  "click",
+  ()=>{
+
+    shuffled=!shuffled;
+
+    shuffleButton.classList.toggle(
+      "active",
+      shuffled
+    );
+
   }
+);
 
-  changeSong(1);
-});
 
-audio.addEventListener("loadedmetadata",()=>{
-  durationElement.textContent=formatTime(audio.duration);
-  progress.value=0;
-});
+/* =========================
+   リピート
+========================= */
 
-audio.addEventListener("timeupdate",()=>{
-  if(!Number.isFinite(audio.duration)||audio.duration<=0)return;
+repeatButton.addEventListener(
+  "click",
+  ()=>{
 
-  progress.value=audio.currentTime/audio.duration*100;
-  currentTimeElement.textContent=formatTime(audio.currentTime);
-});
+    repeating=!repeating;
 
-progress.addEventListener("input",()=>{
-  if(!Number.isFinite(audio.duration)||audio.duration<=0)return;
+    repeatButton.classList.toggle(
+      "active",
+      repeating
+    );
 
-  audio.currentTime=progress.value/100*audio.duration;
-});
+  }
+);
 
-volume.addEventListener("input",()=>{
-  audio.volume=Number(volume.value);
-});
 
-search.addEventListener("input",renderSongs);
+/* =========================
+   曲終了
+========================= */
 
-document.getElementById("refresh")
-  .addEventListener("click",loadSongs);
+audio.addEventListener(
+  "ended",
+  ()=>{
 
-document.getElementById("refreshButton")
-  .addEventListener("click",loadSongs);
+    if(repeating){
 
-document.getElementById("homeButton")
-  .addEventListener("click",()=>{
-    search.value="";
-    renderSongs();
-    window.scrollTo({top:0,behavior:"smooth"});
-  });
+      audio.currentTime=0;
+
+      audio.play();
+
+      return;
+    }
+
+
+    changeSong(1);
+
+  }
+);
+
+
+/* =========================
+   メタデータ
+========================= */
+
+audio.addEventListener(
+  "loadedmetadata",
+  ()=>{
+
+    durationElement.textContent=
+      formatTime(
+        audio.duration
+      );
+
+
+    progress.value=0;
+
+  }
+);
+
+
+/* =========================
+   再生位置
+========================= */
+
+audio.addEventListener(
+  "timeupdate",
+  ()=>{
+
+    if(
+      !Number.isFinite(
+        audio.duration
+      ) ||
+      audio.duration<=0
+    ){
+
+      return;
+    }
+
+
+    progress.value=
+      audio.currentTime /
+      audio.duration *
+      100;
+
+
+    currentTimeElement.textContent=
+      formatTime(
+        audio.currentTime
+      );
+
+  }
+);
+
+
+/* =========================
+   シーク
+========================= */
+
+progress.addEventListener(
+  "input",
+  ()=>{
+
+    if(
+      !Number.isFinite(
+        audio.duration
+      ) ||
+      audio.duration<=0
+    ){
+
+      return;
+    }
+
+
+    audio.currentTime=
+      progress.value /
+      100 *
+      audio.duration;
+
+  }
+);
+
+
+/* =========================
+   音量
+========================= */
+
+volume.addEventListener(
+  "input",
+  ()=>{
+
+    audio.volume=
+      Number(
+        volume.value
+      );
+
+  }
+);
+
+
+/* =========================
+   検索
+========================= */
+
+search.addEventListener(
+  "input",
+  renderSongs
+);
+
+
+/* =========================
+   更新
+========================= */
+
+document
+  .getElementById("refresh")
+  .addEventListener(
+    "click",
+    loadSongs
+  );
+
+
+document
+  .getElementById("refreshButton")
+  .addEventListener(
+    "click",
+    loadSongs
+  );
+
+
+/* =========================
+   ホーム
+========================= */
+
+document
+  .getElementById("homeButton")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      search.value="";
+
+      renderSongs();
+
+
+      window.scrollTo({
+        top:0,
+        behavior:"smooth"
+      });
+
+    }
+  );
+
+
+/* =========================
+   HTMLエスケープ
+========================= */
 
 function escapeHtml(text){
-  const div=document.createElement("div");
-  div.textContent=String(text);
+
+  const div=
+    document.createElement("div");
+
+
+  div.textContent=
+    String(text);
+
+
   return div.innerHTML;
+
 }
 
+
 function escapeAttribute(text){
+
   return String(text)
     .replace(/&/g,"&amp;")
     .replace(/"/g,"&quot;")
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;");
+
 }
 
-document.addEventListener("keydown",event=>{
-  if(event.target.tagName==="INPUT")return;
 
-  if(event.code==="Space"){
-    event.preventDefault();
-    playButton.click();
-  }
+/* =========================
+   キーボード
+========================= */
 
-  if(event.code==="ArrowLeft"){
-    audio.currentTime=Math.max(0,audio.currentTime-5);
-  }
+document.addEventListener(
+  "keydown",
+  event=>{
 
-  if(event.code==="ArrowRight"&&audio.duration){
-    audio.currentTime=Math.min(
-      audio.duration,
-      audio.currentTime+5
-    );
+    if(
+      event.target.tagName==="INPUT"
+    ){
+
+      return;
+    }
+
+
+    if(event.code==="Space"){
+
+      event.preventDefault();
+
+      playButton.click();
+
+    }
+
+
+    if(event.code==="ArrowLeft"){
+
+      audio.currentTime=
+        Math.max(
+          0,
+          audio.currentTime-5
+        );
+
+    }
+
+
+    if(
+      event.code==="ArrowRight" &&
+      audio.duration
+    ){
+
+      audio.currentTime=
+        Math.min(
+          audio.duration,
+          audio.currentTime+5
+        );
+
+    }
+
   }
-});
+);
+
+
+/* =========================
+   起動
+========================= */
 
 (async()=>{
+
   try{
+
     await openDatabase();
+
   }catch(error){
+
     console.warn(
       "IndexedDBを利用できません。通常再生で動作します:",
       error
     );
+
   }
 
+
   await loadSongs();
+
 })();
 </script>
 
